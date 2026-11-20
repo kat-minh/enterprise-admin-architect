@@ -60,10 +60,13 @@ export interface OrdersService {
 }
 
 // lib/api/data-source.ts
+// The guard must FAIL CLOSED: an unset variable means "production", and the mock is allowed only for an explicit
+// development or preview build. (Vite exposes client variables as import.meta.env.VITE_*; process.env.NEXT_PUBLIC_* is
+// undefined there, so a guard written with it can never trip.)
 const source = process.env.NEXT_PUBLIC_ADMIN_DATA_SOURCE ?? 'api';        // 'mock' | 'api'
-const appEnv = process.env.NEXT_PUBLIC_APP_ENV ?? 'development';          // development | preview | production
-if (source === 'mock' && appEnv === 'production') {
-  throw new Error('Admin mock data source is not allowed in production');
+const appEnv = process.env.NEXT_PUBLIC_APP_ENV ?? 'production';           // development | preview | production (unset = production)
+if (source === 'mock' && !['development', 'preview'].includes(appEnv)) {
+  throw new Error('Admin mock data source is only allowed when APP_ENV is explicitly development or preview');
 }
 export const isMock = source === 'mock';
 

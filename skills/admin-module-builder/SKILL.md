@@ -10,7 +10,7 @@ Goal: ship each module as a **working business capability** - real API, server-s
 Preconditions (verify, do not assume): `module-inventory.md`, `information-architecture.md`, `permission-matrix.md`, `design-system.md` exist and Gates 1-2 are approved. Check with `node <skills-dir>/admin-qa-gate/scripts/validate-admin-docs.mjs --root <project> --stage design` (`<skills-dir>` = the folder that contains the `admin-*` skill directories). If missing, go back to the earlier skill instead of improvising.
 
 Templates: `templates/module-spec.md`, `templates/implementation-status.md`, `templates/api-contract.md`.
-References (read when relevant): `references/module-archetypes.md`, `references/rbac-implementation.md`, `references/backend-contract.md`, `references/audit-logging.md`, `references/security-baseline.md`, `references/fe-first-mock-layer.md`.
+References (read when relevant): `references/module-archetypes.md`, `references/rbac-implementation.md`, `references/backend-contract.md`, `references/audit-logging.md`, `references/security-baseline.md`, `references/fe-first-mock-layer.md`, and by module type: `references/site-content-cms.md` (UI text, brand, banners, pages: archetype 11; also read `admin-discovery/references/site-content-and-config.md`), `references/runtime-controls.md` (kill switches, flags, maintenance mode, tunable limits). Whenever a module changes what the public product renders or enforces, fill the spec's "Public-site integration" section and follow "Admin-managed public content" in `references/backend-contract.md`.
 
 ## Delivery mode (check `product-discovery.md` §9)
 

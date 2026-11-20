@@ -50,11 +50,11 @@ node scripts/bundle.mjs qa        --out bundles/5-qa.md
 
 | Phase | Bundle | Approx. size |
 |---|---|---|
-| Discovery & inventory | `discovery` (+ `--domains a,b` or `all`) | 9-11k tokens |
+| Discovery & inventory | `discovery` (+ `--domains a,b` or `all`) | 14-15k tokens (up to 24k with all domains) |
 | Architecture & permissions | `ia` | 7k tokens |
 | Design system | `design` | 13k tokens |
-| Module build | `build` | 16k tokens |
-| QA | `qa` | 8k tokens |
+| Module build | `build` | 22k tokens |
+| QA | `qa` | 11k tokens |
 
 Workflow:
 1. **One phase per conversation.** Paste the phase bundle, then give your project facts (see below).

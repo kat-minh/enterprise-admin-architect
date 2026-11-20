@@ -36,6 +36,18 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] PC-5 No module without evidence/justification; `proposed` modules only built when approved.
 - [ ] PC-6 Hard-coded business content/forms discovered in discovery have a management path.
 - [ ] PC-7 Core modules present (auth, rbac, dashboard, admin-users, audit-log, settings, my-account) or exceptions documented.
+- [ ] PC-8 Every row of the "Content & configuration inventory" classified **CMS** has a module, and an edit made in the admin shows up in the public product (and the PWA) within the documented time; the rollback works; with the read path down the product still renders from defaults.
+- [ ] PC-9 Every foundation module is included or excluded with a reason the owner confirmed at Gate 1 (the validator lists the undecided ones); every owner-intake answer maps to a module, a ledger row or an exclusion.
+
+### Site content / UI configuration (only when `site-content` or `localization` is in scope)
+
+- [ ] CMS-1 Drafts are invisible to users; publish, discard and rollback are atomic with their audit rows (force an audit failure: nothing changes) and each needs a reason.
+- [ ] CMS-2 Rollback creates a new version; versions are immutable (a direct UPDATE or DELETE is rejected); version 0 means the code defaults.
+- [ ] CMS-3 Preview shows the draft in the real public product through a short-lived token, never cached, with a visible "preview" marker.
+- [ ] CMS-4 Input is plain text and validated server-side: HTML, placeholder or plural mismatch, over-long text, unknown keys and low-contrast colours are rejected with a precise message; an XSS payload renders inert.
+- [ ] CMS-5 Concurrent edits give `409`; edit, publish and read permissions are separate and enforced by the API.
+- [ ] CMS-6 The public read endpoint serves only published content, with `ETag`/`304` and a short cache; strings built at module load are covered; orphaned overrides are listed, never dropped.
+- [ ] CMS-7 The time between "published" and "visible" is stated in the UI and was measured.
 
 ## B. UI/UX
 
@@ -118,6 +130,7 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] DOC-2 `permission-matrix.md` equals the permission constants/seed in code.
 - [ ] DOC-3 Backend gaps and limitations are listed honestly.
 - [ ] DOC-4 Run/seed/login instructions per role exist.
+- [ ] DOC-5 `docs/admin/runbook.md` exists (template `admin-qa-gate/templates/runbook.md`): hosting and domains, env var names, production Super Admin bootstrap, backup and restore, how to roll back a content publish, and an operator quick-start per role.
 
 ## P. FE-first prototype checks (only for `prototype` modules)
 

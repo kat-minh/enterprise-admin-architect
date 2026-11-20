@@ -125,3 +125,56 @@ test('usage errors', () => {
   const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'validate-empty-'));
   assert.equal(spawnSync(process.execPath, [VALIDATOR, '--root', empty], { encoding: 'utf8' }).status, 1);
 });
+
+test('the bundled example has no warning about the owner intake, the content inventory, the ledger or foundation triage', () => {
+  const r = run(EXAMPLE, 'build');
+  assert.ok(!hasMsg(r.warnings, /Owner intake|Content & configuration inventory|Owner module|Foundation modules not decided|Public-site integration/), r.warnings.join(' | '));
+});
+
+test('discovery must have an owner intake and a content & configuration inventory', () => {
+  const r = run(variant({
+    'product-discovery.md': (t) => t.replace(/## 12\. Owner intake[\s\S]*$/, ''),
+  }), 'discovery');
+  assert.equal(r.status, 0, 'these are warnings, not errors');
+  assert.ok(hasMsg(r.warnings, /No "Owner intake" section/));
+  assert.ok(hasMsg(r.warnings, /No "Content & configuration inventory" section/));
+});
+
+test('feature ledger: a missing column, a blank owner and an unknown owner module are flagged; "excluded: reason" is accepted', () => {
+  const noColumn = run(variant({
+    'product-discovery.md': (t) => t.replace(' Owner module |', '').replace(/\| products, categories \|/, '|').replace(/\| orders, refunds-returns \|/, '|').replace(/\| promotions \|/, '|').replace(/\| site-content \|/g, '|').replace(/\| excluded: [^|]+\|/, '|').replace('|---|---|---|---|---|---|---|---|---|', '|---|---|---|---|---|---|---|---|'),
+  }), 'discovery');
+  assert.ok(hasMsg(noColumn.warnings, /Feature Ledger has no "Owner module" column/), noColumn.warnings.join(' | '));
+  const bad = run(variant({
+    'product-discovery.md': (t) => t.replace('| promotions |', '| no-such-module |').replace('| products, categories |', '|  |'),
+  }), 'discovery');
+  assert.ok(hasMsg(bad.warnings, /owner module "no-such-module" is not in module-inventory/));
+  assert.ok(hasMsg(bad.warnings, /Feature "Product catalogue" has no owner module/));
+  assert.ok(!hasMsg(bad.warnings, /Nightly stock import/), 'excluded: <reason> is a valid owner');
+});
+
+test('foundation triage: an undecided foundation module is flagged once, with its name', () => {
+  const r = run(variant({
+    'module-inventory.md': (t) => t.replace(/^\| privacy-requests \|.*\n/m, '').replace(/^\| app-controls \|.*\n/m, ''),
+  }), 'discovery');
+  const w = r.warnings.find((m) => /Foundation modules not decided/.test(m));
+  assert.ok(w, r.warnings.join(' | '));
+  assert.match(w, /privacy-requests/);
+  assert.match(w, /app-controls/);
+  assert.ok(!/localization/.test(w), 'decided modules are not listed');
+});
+
+test('module specs should say how the public product reads the data (warning, not error)', () => {
+  const r = run(variant({
+    'module-specifications/auth.md': (t) => t.replace(/## Public-site integration[\s\S]*?(?=## List page)/, ''),
+  }), 'build');
+  assert.equal(r.status, 0);
+  assert.ok(hasMsg(r.warnings, /auth\.md: No "## Public-site integration" section|No "## Public-site integration"/));
+});
+
+test('the template placeholder row "decide each" decides nothing and is itself flagged', () => {
+  const r = run(variant({
+    'module-inventory.md': (t) => t.replace('## Excluded / deferred (and why)\n', '## Excluded / deferred (and why)\n| public-users · media · localization · help · jobs-monitor · import-export · saved-views · search-command · user-messaging · privacy-requests · app-controls | decide each | <replace> |\n'),
+  }), 'discovery');
+  assert.ok(hasMsg(r.warnings, /still in "Excluded \/ deferred"/), r.warnings.join(' | '));
+});

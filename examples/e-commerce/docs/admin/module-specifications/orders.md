@@ -33,6 +33,13 @@ Scopes: all.
 
 Backend work required: implement in repo.
 
+## Public-site integration
+- **Public read path:** the storefront order-status page reads the same Order rows through the existing public API (`GET /api/orders/:token`); nothing new is published.
+- **Caching and invalidation:** none; order status is never cached on the public side.
+- **When a change takes effect:** immediately; a status change also triggers the customer e-mail.
+- **Fallback:** N/A - the page shows an error and a retry, it never shows stale status.
+- **Backfill / preview / rollback:** N/A - no admin-managed copy of public content.
+
 ## List page
 - **Search fields:** order number, customer name/email/phone (diacritic-insensitive)
 - **Filters:** status, payment status, created date range, total range

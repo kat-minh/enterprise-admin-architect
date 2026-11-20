@@ -13,6 +13,8 @@ Read when: writing a module spec (step A). Not every module is CRUD - pick the a
 8. Directory (users, customers, members)
 9. Media library
 10. Reports / analytics
+11. Site content / UI configuration (CMS-style)
+12. Ops monitor (jobs, integrations, system health)
 - Archetype → required capabilities matrix
 
 ---
@@ -42,9 +44,10 @@ Read when: writing a module spec (step A). Not every module is CRUD - pick the a
 - **Must:** append-only; corrections are reversing entries; money as integer minor units + currency; links to source entity; provider IDs; status sync from webhooks (idempotent); date-range filters with totals; export; restricted permissions.
 - **Pitfalls:** editing/deleting rows; floating-point money; unbounded date ranges on huge tables.
 
-## 6. Settings / singleton (site info, branding, integrations, policies)
+## 6. Settings / singleton (integrations, operational configuration, policies)
+Operational and integration settings only. Public-facing copy, branding and banners are archetype 11; kill switches, flags and limits follow `runtime-controls.md`.
 - **Screens:** sectioned settings page (cards/tabs), each section independently saved.
-- **Must:** only real, consumed settings; validation; secrets write-only/masked; "last changed by/at"; audit with before/after; environment awareness; effect on public site (cache revalidation); danger zone for risky switches; versioned or effective-dated for pricing/policy.
+- **Must:** only real settings (read by the system, or made to be read by this build and recorded in the spec); validation; secrets write-only/masked; "last changed by/at"; audit with before/after; environment awareness; effect on public site (cache revalidation); danger zone for risky switches; versioned or effective-dated for pricing/policy.
 - **Pitfalls:** settings no code reads; exposing secrets; no cache invalidation.
 
 ## 7. Calendar / availability / scheduling (departures, slots, shifts, classes)
@@ -67,6 +70,17 @@ Read when: writing a module spec (step A). Not every module is CRUD - pick the a
 - **Must:** definitions of each metric; server-side aggregation (SQL/materialised/cached) never client-side over raw rows; consistent timezone; drill-down to filtered lists; data freshness label; permission-gated.
 - **Pitfalls:** metrics the data can't support; heavy queries on OLTP DB without limits.
 
+## 11. Site content / UI configuration (CMS-style)
+Words, brand, banners, pages and menus that the public product renders, for websites **and apps**. Full pattern: `site-content-cms.md`; the decision of what to manage: `admin-discovery/references/site-content-and-config.md`.
+- **Screens:** tabbed page per surface (texts, banners, brand, pages/menus) with a persistent bar "draft: N changes · Preview · Publish" · server-side list with inline editor for large catalogues (UI strings) · publishing tab: per-item diff, history, rollback.
+- **Must:** one draft plus immutable versions; publish atomic with its audit row; rollback creates a new version; preview in the real public product with a short-lived token; scheduling for banners and campaigns; a public read endpoint (published data only, ETag, short cache) with bundled defaults as fallback; plain-text validation, placeholder and plural checks, contrast checks for colours; optimistic concurrency on the draft; separate `read` / `edit` / `publish` permissions; the time a change takes effect stated to the editor.
+- **Pitfalls:** editing live content directly; settings nobody reads; overrides applied after module-level strings were computed; a config endpoint that blocks first paint; free-form HTML/CSS/JS; changing installed-app identity without a build; a second CMS built next to an existing one.
+
+## 12. Ops monitor (jobs, integrations, system health)
+- **Screens:** job list (last run, duration, next run, status) · run history with errors · integration cards (status, quota, key age) · system panel (environment, version/commit, migration status, dependency checks) · delivery tab for e-mail/SMS/push.
+- **Must:** read-only by default; manual trigger and retry permissioned and audited; failures link to the entity and to logs or error tracking; thresholds that feed dashboard attention queues; secrets shown only as set / not set; works with several instances (say which numbers are per process).
+- **Pitfalls:** a "healthy" light that checks nothing; polling heavy checks on every page view; exposing stack traces or keys.
+
 ## Archetype → required capabilities
 
 | Capability | Catalog | Workflow | Content | Queue | Ledger | Settings | Calendar | Directory | Media | Report |
@@ -77,3 +91,5 @@ Read when: writing a module spec (step A). Not every module is CRUD - pick the a
 | Audit events | ✔ | **✔** | ✔ | **✔** | built-in | **✔** | ✔ | **✔** | ✔ | - |
 | Optimistic concurrency | ✔ | **✔** | **✔** | claim/lock | - | ✔ | **✔** | ✔ | - | - |
 | Export | ✔ | ✔ | ✔ | ✔ | **✔** | - | ✔ | restricted | - | **✔** |
+
+Site content (11) behaves like Content (3) plus a public read path and fallback; Ops monitor (12) like Ledger (5) with read-mostly status and audited manual actions.

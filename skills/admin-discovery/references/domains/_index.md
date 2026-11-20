@@ -18,6 +18,7 @@ Match **signals found in the code/data** (models, routes, integrations) to domai
 | `events-ticketing.md` | Event, Venue, Ticket type, Attendee, Check-in, Session/Speaker, Seat |
 | `community-ugc.md` | Post/Thread, Comment, Report/Flag, Moderation, Reputation, Ban, Group |
 | `fintech-kyc.md` | Wallet/Account, Transaction, KYC document, Loan/Application, Risk, Ledger |
+| `consumer-app.md` | Accounts with several sign-in methods, PWA or mobile shell, per-user personal records (plans, trips, lists), sharing by link or invite, push/device tokens, onboarding, a third-party or scraping dependency; few tables but much UI copy |
 | `_custom-domain-playbook.md` | **None of the above fit** (e.g. DNA testing, logistics, church/donation, agriculture, legal services). Derive modules from first principles. |
 
 ## Merge rules

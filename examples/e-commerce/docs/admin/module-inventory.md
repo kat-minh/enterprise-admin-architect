@@ -41,6 +41,16 @@
 | Trash / restore | excluded | `Product.deletedAt` handled by an "Archived" filter inside `products` |
 | Message templates | deferred | Transactional emails are code-owned for now |
 | Webhooks UI | excluded | Stripe webhooks are internal |
+| public-users | merged | Covered by the `customers` module |
+| import-export | deferred | Catalogue CSV import is planned after launch; the orders export lives inside `orders` |
+| jobs-monitor | excluded | Stripe webhooks and the stock sync are internal; failures surface in `payments` and on the dashboard |
+| search-command | excluded | Fewer than 10 modules |
+| saved-views | excluded | No high-volume list with repeated filters yet |
+| localization | excluded | Single-language (vi) store; FAQ, banners and meta text are covered by `site-content` |
+| help | excluded | Two operators; a README runbook is enough |
+| user-messaging | deferred | Order e-mails are code-owned (see Message templates); no broadcast, push or newsletter yet |
+| privacy-requests | deferred | Customer data export and erasure are handled by the owner by hand for now; revisit before selling in the EU |
+| app-controls | excluded | No feature flags or runtime switches; `ENABLE_REVIEWS` is set at deploy |
 
 ## Assumptions & approvals
 - 2026-11-20 - Gate 1 approved by user (example).

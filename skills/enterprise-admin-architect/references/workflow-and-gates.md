@@ -20,7 +20,7 @@ Skills: `admin-discovery`, then `admin-information-architecture`.
 **Present at Gate 1** (one screen of text, then the files):
 1. Product in 5 lines + detected stack (and what will be reused).
 2. Domain map (3-8 domains) and the key entity relationships.
-3. Module inventory table: `core` / `foundation` / `domain`, evidence tag, priority P0/P1/P2. Call out **what was deliberately excluded and why**.
+3. Module inventory table: `core` / `foundation` / `domain`, evidence tag, priority P0/P1/P2. Call out **what was deliberately excluded and why**: list every excluded or deferred foundation module as a plain-language yes/no question with its one-line consequence (for example "if you want to edit texts, banners and branding yourself we need `site-content`; excluding it means every change stays a code release"), and record the owner's answer. Present the owner-intake answers and the content & configuration inventory beside the module table.
 4. Admin personas/roles and the permission matrix headline.
 5. Sidebar tree (≤ 9 top-level groups).
 6. Backend gap list (endpoints/tables missing for P0/P1 modules) and who builds them.
@@ -44,7 +44,9 @@ Skills: `admin-module-builder` (loop per module) and `admin-qa-gate`.
 
 Order: foundation (shell/auth guard/permission infra/audit service) → `core` modules → domain modules by priority (core business entity first, then operational workflow, then supporting entities, then analytics) → `foundation` modules → integration polish.
 
-After **each module**: run `admin-qa-gate` module checks, update `implementation-status.md`. Do not batch QA to the end.
+After **each module**: run `admin-qa-gate` module checks, update `implementation-status.md`. Do not batch QA to the end. When a module changes what the public product renders or enforces, change the public code in the same module (listed in its "Public-site integration") and run the public site's own tests.
+
+Before Gate 3, write `docs/admin/runbook.md` from `admin-qa-gate/templates/runbook.md` (hosting, env names, production Super Admin bootstrap, backup and restore, content rollback, operator quick-start per role) and run a large-dataset check (`admin-qa-gate/references/e2e-test-playbook.md`).
 
 **Present at Gate 3:** the final report (see SKILL.md) + `qa-report.md`.
 
@@ -67,7 +69,8 @@ Rules: mock data only inside the adapter; always labelled "Prototype data"; emul
 
 | Site size | Adjustment |
 |---|---|
-| Landing/brochure + contact form (≤ 5 entities) | Merge Gates 1 and 2. Modules: auth, roles (2), dashboard (leads), leads inbox, content/settings, audit. Skip multi-level IA. |
+| Landing/brochure + contact form (≤ 5 entities, little UI copy to manage) | Merge Gates 1 and 2. Modules: auth, roles (2), dashboard (leads), leads inbox, content/settings, audit. Skip multi-level IA. |
+| Few entities but many content, configuration or messaging surfaces (a consumer app or PWA with 4-6 tables, a lot of UI copy, push or e-mail, a fragile third-party dependency) | Do **not** use the brochure row. Size by operators, workflows, content surfaces, messaging channels and external dependencies, not by entity count: run the content, localization, user-messaging, app-controls and privacy triage in full (`admin-discovery/references/domains/consumer-app.md`). |
 | Typical business site (6-20 entities) | Full pipeline as written. |
 | Large platform (20+ entities, multi-role, workflows) | Split Session 3 into waves (per domain), one gate per wave; write module specs in parallel (sub-agents, if your tool has them); keep one reference module authoritative. |
 

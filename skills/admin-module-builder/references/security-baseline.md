@@ -24,6 +24,7 @@ Read when: foundation step, each module's step F, and before Gate 3. An admin pa
 - **Credentials an admin hands to someone else** (temporary password on create or reset): generate on the server, return in that one response only, force a change at first sign-in, show it once in a dialog that cannot be dismissed (Esc, backdrop) until "I have saved it" is ticked, and never put it in the audit log, the server log, a later read or an error. Test that it appears exactly once across every response of the run. An admin may not reset, demote or deactivate their own account, and the last active Super Admin can never be removed, also under concurrent requests (lock the rows inside the transaction).
 - **Suspension and deactivation must take effect on the next request.** Stateless long-lived tokens (JWT without a session store) cannot be revoked by themselves: add a session table, or a `token_version`/`status` check on every authenticated request, or short-lived tokens with refresh. Enforce it in the authentication layer, not only in the login endpoint.
 - Log all auth events (`audit-logging.md`).
+- **Separate-origin admin** (an SPA on its own origin calling an API elsewhere, typical for PWAs). Decide explicitly and record the decision (a short ADR in `design-system.md` or `api-contract.md`), because the cookie baseline above does not carry over: `SameSite=Lax` cookies are not sent on cross-site XHR. Options, in order of preference: (1) admin and API on the same registrable domain (`admin.x.com`, `api.x.com`) with a `Domain` cookie, a CORS allow-list with credentials, an `Origin` check and a CSRF token; (2) a same-origin BFF or proxy that holds the session; (3) a bearer token kept in `sessionStorage`, accepted only with the compensating controls: short absolute and idle lifetimes enforced by a server-side session table (revocable), no third-party scripts, a strict CSP, no HTML injection sinks, a token that is invalid for the public API and vice versa (separate audience and key), and the residual XSS risk stated in the QA report. Never `localStorage`, never a long-lived token.
 
 ## Authorization
 
@@ -49,7 +50,7 @@ Read when: foundation step, each module's step F, and before Gate 3. An admin pa
 - Mask PII in lists (phone/email partially); "reveal" is a permission + audited action. Default to least data in API responses.
 - Secrets (API keys, SMTP, payment) write-only in UI, stored encrypted or in a secret manager; never in client bundles, logs or audit diffs.
 - Encrypt sensitive columns/documents where regulation demands (KYC, health, genetic data); time-limited signed URLs for documents.
-- Retention & deletion: soft delete default; anonymisation/purge workflow for privacy requests; backups considered.
+- Retention & deletion: soft delete default; anonymisation/purge workflow for privacy requests; backups considered. When end users have personal data (GDPR, Vietnam's Decree 13/2023, CCPA and similar), build the `privacy-requests` module: request queue with deadline, export, erasure with legal holds, consent and terms-version log, retention jobs for sessions, audit and soft-deleted data, and a restore drill noted in the runbook.
 - Do not log request bodies containing secrets/PII; scrub error reports.
 
 ## Operations & hygiene
@@ -65,7 +66,7 @@ Read when: foundation step, each module's step F, and before Gate 3. An admin pa
 
 | Feature | Controls |
 |---|---|
-| Impersonation | Dedicated permission, reason required, visible banner, time-limited, read-only by default, blocked for Super Admin accounts and payment/credential changes, full audit |
+| Impersonation | Dedicated permission, reason required, visible banner, time-limited, read-only by default, blocked for Super Admin accounts and payment/credential changes, full audit. Prefer a read-only "view as user" page inside the admin. If a real "log in as" is unavoidable (the public app is on another origin): mint a short-lived, single-use, scoped token (read-only scope, audience of the public app), record the admin as the audit actor, block credential, payment and personal-data changes, and keep a persistent banner with a one-click exit |
 | Bulk delete/update | Preview + count confirmation, limits, async job, audit, reversible window |
 | Data export | Permission, scope, masking, audit, signed expiring link |
 | Role/permission editing | `rbac.manage` only, MFA step-up, audit, invariants |

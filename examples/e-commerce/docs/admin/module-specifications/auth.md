@@ -26,6 +26,9 @@ N/A - public entry module. Authenticated access is enforced by the session guard
 
 Backend work required: none (MFA planned P1).
 
+## Public-site integration
+N/A - admin-only: the public store never reads this module's data.
+
 ## List page
 N/A - no list.
 

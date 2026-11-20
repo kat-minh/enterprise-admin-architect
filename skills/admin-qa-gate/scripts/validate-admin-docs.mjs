@@ -115,6 +115,8 @@ const EVIDENCE = ['confirmed', 'implied', 'proposed'];
 const PRIORITY = ['P0', 'P1', 'P2'];
 const STATUS = ['proposed', 'planned', 'in-progress', 'prototype', 'done', 'blocked', 'dropped', 'exists'];
 const CORE_IDS = ['auth', 'rbac', 'dashboard', 'admin-users', 'audit-log', 'settings', 'my-account'];
+// universal foundation candidates (admin-discovery/references/universal-modules.md): each must be decided, never skipped silently
+const FOUNDATION_IDS = ['public-users', 'notifications', 'media', 'import-export', 'trash', 'site-content', 'leads-inbox', 'templates', 'jobs-monitor', 'search-command', 'saved-views', 'localization', 'help', 'user-messaging', 'privacy-requests', 'app-controls'];
 const NO_PERMISSION_OK = new Set(['auth', 'my-account']); // self-service / public entry modules
 const CELL_OK = /^(yes|no|own|team|y|n|x|✔|✓|✘|✗|-|—|–)$/i;
 const PERM_RE = /^[a-z][a-z0-9_-]*\.[a-z][a-z0-9_-]*$/;
@@ -193,6 +195,42 @@ if (inventoryMd) {
     if (modules.size === 0) err('module-inventory.md', 'Inventory table has no rows.');
     else ok('module-inventory.md', `${modules.size} modules parsed`);
     if (![...modules.values()].some((m) => m.layer === 'domain')) warn('module-inventory.md', 'No domain-layer modules - a generic admin is not the goal; derive domain modules from the website.');
+    // foundation triage: every candidate is included, or excluded / deferred with a reason the owner has seen
+    const decidedText = excluded.split('\n').filter((l) => !/decide each/i.test(l)).join('\n'); // the template's placeholder row decides nothing
+    const undecided = FOUNDATION_IDS.filter((f) => !modules.has(f) && !new RegExp(`(^|[^a-z0-9-])${f}([^a-z0-9-]|$)`, 'i').test(decidedText));
+    if (/decide each/i.test(excluded)) warn('module-inventory.md', 'The template row "decide each" is still in "Excluded / deferred": replace it with one row per foundation candidate.');
+    if (undecided.length) {
+      warn('module-inventory.md', `Foundation modules not decided: ${undecided.join(', ')}. Include each, or list it under "Excluded / deferred" with a reason (and ask the owner at Gate 1: never exclude silently).`);
+    }
+  }
+}
+
+// ---------------------------------------------------------------- discovery document: owner intake, content inventory, ledger traceability
+if (at('discovery')) {
+  const disc = readDoc('product-discovery.md');
+  if (disc && disc.trim().length >= 80) {
+    if (!hasHeading(disc, /owner intake/i)) warn('product-discovery.md', 'No "Owner intake" section: ask the owner what they change by hand today (discovery step 3b) and map each answer to a module.');
+    if (!hasHeading(disc, /content\s*(&|and)\s*configuration inventory/i)) warn('product-discovery.md', 'No "Content & configuration inventory" section: list UI strings, branding, banners, legal pages and switches, and classify each as CMS, code or build-time (discovery step 3c).');
+    const ledgerSection = sectionOf(disc, /feature ledger/i);
+    const ledger = ledgerSection ? parseTables(ledgerSection)[0] : null;
+    if (ledger) {
+      const ownerIx = ledger.headers.map(norm).findIndex((h) => h.startsWith('ownermodule'));
+      if (ownerIx < 0) {
+        warn('product-discovery.md', 'Feature Ledger has no "Owner module" column: every feature must map to a module ID or "excluded: <reason>".');
+      } else {
+        for (const r of ledger.rows) {
+          const feature = clean(r.cells[0]);
+          const owner = clean(r.cells[ownerIx]);
+          if (isEmptyVal(owner)) { warn('product-discovery.md', `Feature "${feature}" has no owner module (a module ID, or "excluded: <reason>").`); continue; }
+          if (/^excluded\b/i.test(owner)) continue;
+          if (modules.size) {
+            for (const id of owner.split(/[,;+/]/).map(clean).filter(Boolean)) {
+              if (!modules.has(id)) warn('product-discovery.md', `Feature "${feature}": owner module "${id}" is not in module-inventory.md.`);
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -300,6 +338,9 @@ if (at('build') && modules.size) {
     const spec = fs.readFileSync(specPath, 'utf8').replace(/\r\n/g, '\n');
     for (const [label, re] of SPEC_HEADINGS) {
       if (!hasHeading(spec, re)) err(`module-specifications/${m.id}.md`, `Missing section "## ${label}" (write "N/A - reason" if it does not apply).`);
+    }
+    if (!hasHeading(spec, /^public[- ]site integration\b/i)) {
+      warn(`module-specifications/${m.id}.md`, 'No "## Public-site integration" section: write how the public product reads this data (read path, caching, timing, fallback, preview, rollback), or "N/A - admin-only".');
     }
     const permSection = sectionOf(spec, /^permissions\b/i);
     if (permSection && permissions.size) {

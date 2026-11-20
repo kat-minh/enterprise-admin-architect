@@ -192,3 +192,96 @@ test('domain hints and graceful handling of empty / invalid input', () => {
   const bad = spawnSync(process.execPath, [SCANNER, path.join(os.tmpdir(), 'definitely-not-here-xyz')], { encoding: 'utf8' });
   assert.equal(bad.status, 2);
 });
+
+test('UI surfaces: a custom translate function, nested dictionaries, theme tokens, brand head, banners, static pages', () => {
+  const tokens = ':root {\n' + Array.from({ length: 12 }, (_, i) => `  --ds-c${i}: #00${i}${i}${i}${i};`).join('\n') + '\n}\n';
+  const dir = makeProject({
+    'package.json': JSON.stringify({ dependencies: { react: '19.0.0', 'vite-plugin-pwa': '2.0.0' } }),
+    'index.html': '<html><head><title>Acme Planner</title><meta name="description" content="Plan trips together"><meta name="theme-color" content="#ffffff"></head></html>',
+    'src/main.tsx': `export const a = t("Xin chào"); export const b = t('Còn {n} ngày', { n: 3 }); const c = \`\${x}\`;`,
+    'src/App.tsx': `export const d = t('Đăng nhập'); export const dup = t('Xin chào'); const tmpl = t(\`Tên \${name}\`);`,
+    'src/i18n/en/home.ts': `export default { 'Xin chào': 'Hello' }`,
+    'src/i18n/en.ts': `export default {}`,
+    'src/tokens.css': tokens,
+    'src/components/UpdateBanner.tsx': 'export function UpdateBanner(){ return null }',
+    'content/about.md': '# About us',
+    'src/site.ts': `export const site = { name: 'Acme' }`,
+    'public/manifest.json': '{}',
+  });
+  const ui = scan(dir).uiSurfaces;
+  assert.deepEqual(ui.translation.libraries, []);
+  assert.equal(ui.translation.distinctStrings, 3, 'Xin chào, Còn {n} ngày, Đăng nhập; template literals with ${} are skipped');
+  assert.equal(ui.translation.translateCalls, 4);
+  assert.ok(ui.translation.note && /key is probably the source-language text/.test(ui.translation.note));
+  assert.ok(ui.translation.languages.includes('en'), 'language found from a nested dictionary folder and from en.ts');
+  assert.ok(ui.translation.dictionaryFiles.includes('src/i18n/en/home.ts'));
+  assert.equal(ui.theme.tokenFiles[0].file, 'src/tokens.css');
+  assert.equal(ui.theme.tokenFiles[0].customProperties, 12);
+  assert.equal(ui.brand.htmlHeads[0].title, 'Acme Planner');
+  assert.equal(ui.brand.htmlHeads[0].themeColor, '#ffffff');
+  assert.deepEqual(ui.brand.pwaPlugin, ['vite-plugin-pwa']);
+  assert.ok(ui.banners.includes('src/components/UpdateBanner.tsx'));
+  assert.ok(ui.staticContent.markdownPages.includes('content/about.md'));
+  assert.ok(ui.configFiles.includes('src/site.ts') && ui.configFiles.includes('public/manifest.json'));
+});
+
+test('with an i18n library the "custom translation function" note is not raised; CMS, flag and PWA SDKs are detected', () => {
+  const r = scan(makeProject({
+    'package.json': JSON.stringify({ dependencies: { 'react-intl': '6.0.0', '@sanity/client': '6.0.0', 'unleash-client': '5.0.0', 'next-pwa': '5.0.0', 'pg-boss': '9.0.0' } }),
+    'src/App.tsx': `export const a = t('Hello world');`,
+    'public/locales/en/translation.json': '{}',
+    'public/locales/fr/translation.json': '{}',
+  }));
+  assert.ok(r.stack.i18n.some((x) => x.name === 'react-intl'));
+  assert.ok(r.stack.cms.some((x) => x.name === 'Sanity'));
+  assert.ok(r.stack.flags.some((x) => x.name === 'Unleash'));
+  assert.ok(r.stack.pwa.some((x) => x.name === 'next-pwa'));
+  assert.ok(r.stack.integrations.some((x) => /pg-boss/.test(x.name)));
+  assert.deepEqual(r.uiSurfaces.translation.libraries, ['react-intl']);
+  assert.equal(r.uiSurfaces.translation.note, null);
+  assert.deepEqual(r.i18n.locales.sort(), ['en', 'fr'], 'public/locales/<lang>/<namespace>.json is found');
+});
+
+test('operations: schedulers, message sends, uploads, rate limiters, env switches read in code, webhook routes', () => {
+  const r = scan(makeProject({
+    'package.json': JSON.stringify({ dependencies: { express: '4.0.0' } }),
+    'server/jobs/nightly.ts': `import cron from 'node-cron'; cron.schedule('0 2 * * *', () => run());`,
+    'server/mail.ts': `export const send = (to) => transporter.sendMail({ to });`,
+    'server/upload.ts': `import multer from 'multer'; export const up = multer({ dest: 'tmp' });`,
+    'server/limits.ts': `export const limiter = rateLimit({ windowMs: 1000, max: 5 });`,
+    'server/flags.ts': `export const on = process.env.ENABLE_SIGNUPS === 'true'; export const url = process.env.DATABASE_URL;`,
+    'server/app.ts': `import express from 'express'; const app = express(); app.post('/api/webhooks/stripe', (req, res) => res.end());`,
+    'vercel.json': JSON.stringify({ crons: [{ path: '/api/cron', schedule: '0 * * * *' }] }),
+  }));
+  const op = r.operations;
+  assert.ok(op.schedulers.includes('server/jobs/nightly.ts') && op.schedulers.includes('vercel.json'));
+  assert.ok(op.messageSends.includes('server/mail.ts'));
+  assert.ok(op.uploads.includes('server/upload.ts'));
+  assert.ok(op.rateLimiters.includes('server/limits.ts'));
+  assert.deepEqual(op.envGates, ['ENABLE_SIGNUPS']);
+  assert.ok(op.envUsedInCode.includes('DATABASE_URL') && op.envUsedInCode.includes('ENABLE_SIGNUPS'));
+  assert.ok(op.webhookRoutes.includes('/api/webhooks/stripe'));
+});
+
+test('markdown output has the UI surfaces and operations sections and never prints env values', () => {
+  const dir = makeProject({
+    'package.json': JSON.stringify({ dependencies: { react: '19.0.0' } }),
+    '.env.example': 'SECRET_KEY=super-secret-value\n',
+    'src/App.tsx': `export const a = t('Hello world');`,
+  });
+  const md = execFileSync(process.execPath, [SCANNER, dir, '--md'], { encoding: 'utf8' });
+  assert.match(md, /## UI surfaces \(CMS candidates/);
+  assert.match(md, /## Operations/);
+  assert.match(md, /Content & configuration inventory/);
+  assert.doesNotMatch(md, /super-secret-value/);
+});
+
+test('a PWA or push dependency suggests the consumer-app domain even when no keyword matches', () => {
+  const r = scan(makeProject({
+    'package.json': JSON.stringify({ dependencies: { react: '19.0.0', 'vite-plugin-pwa': '2.0.0' } }),
+    'src/App.tsx': 'export default function A(){ return null }',
+  }));
+  assert.ok(r.domainHints.some((d) => d.domain === 'consumer-app'), JSON.stringify(r.domainHints));
+  const shop = scan(makeProject({ 'package.json': JSON.stringify({ dependencies: { react: '19.0.0' } }) }));
+  assert.ok(!shop.domainHints.some((d) => d.domain === 'consumer-app'), 'no PWA / push signal: no hint');
+});

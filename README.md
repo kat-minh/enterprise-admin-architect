@@ -69,7 +69,7 @@ Plus a role × permission matrix (for example `orders.refund` only for Finance),
 Also included:
 - `admin-discovery/scripts/scan-project.mjs` - project scanner (stack, routes, API, models, enums/status, existing admin, roles, public forms, env var **names only**).
 - `admin-qa-gate/scripts/validate-admin-docs.mjs` - documentation consistency checker (module ↔ permission ↔ route ↔ spec ↔ verification evidence).
-- `admin-discovery/references/domains/` - 14 domain playbooks (e-commerce, travel/booking, education, corporate, news, SaaS, marketplace, clinic/appointments, real estate, job board, F&B, events/ticketing, community/UGC, fintech/KYC) plus a playbook for unusual domains.
+- `admin-discovery/references/domains/` - 15 domain playbooks (e-commerce, travel/booking, education, corporate, news, SaaS, marketplace, clinic/appointments, real estate, job board, F&B, events/ticketing, community/UGC, fintech/KYC, consumer app / PWA) plus a playbook for unusual domains.
 - `scripts/bundle.mjs` - builds a self-contained prompt per phase for chat-only assistants.
 - `examples/e-commerce/` - a complete sample `docs/admin` that passes the validator.
 
@@ -144,7 +144,7 @@ node skills/admin-qa-gate/scripts/validate-admin-docs.mjs --root <project> --sta
 ## Module layers
 
 - **core** (mandatory for every web): authentication & sessions, RBAC, domain-aware dashboard, admin accounts, audit log, settings, my account/security.
-- **foundation** (conditional; exclusion needs a stated reason): users/customers, notifications, media, import/export, trash, **site content** (menus, banners, static pages, SEO, redirects), **leads inbox** (contact forms), message templates, jobs monitor, search/command menu, localization.
+- **foundation** (conditional; exclusion needs a stated reason): users/customers, notifications, media, import/export, trash, **site content & UI** (UI text and translations, brand and theme accent, banners, static pages, menus, SEO, redirects, with draft, preview, publish and rollback, for websites **and apps**), **leads inbox** (forms, feedback, reports), message templates, **user messaging**, **jobs, integrations and system health**, **runtime controls** (kill switches, flags, maintenance mode), **privacy requests**, search/command menu, localization.
 - **domain** (derived from your website): Orders, Bookings, Courses, Articles, Organizations… or modules for an unusual business.
 
 ## Design principles

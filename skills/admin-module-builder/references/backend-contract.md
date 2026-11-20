@@ -75,6 +75,18 @@ Status codes: `400` malformed/unknown params · `401` unauthenticated · `403` f
 - Validate extension + MIME + magic bytes + size; randomise storage keys; never trust client filenames; serve user content from a separate domain/bucket with `Content-Disposition` for non-images; block SVG/HTML or sanitise; scan for malware if available.
 - Track usage references so referenced files can't be deleted blindly.
 
+## Admin-managed public content
+
+Whenever the admin manages something the public product renders or enforces (copy, brand, banners, pages, flags, catalogue, availability), the module spec's **"Public-site integration"** section must be filled, and the build must follow these rules. Full CMS pattern: `site-content-cms.md`; switches and limits: `runtime-controls.md`.
+
+- **A public read API separate from the admin namespace.** Unauthenticated (or with the public caller's own auth), published data only, never drafts, staff identity or internal ids; response size bounded; `ETag` or a version field and a short `Cache-Control`.
+- **Invalidation on publish:** cache tag or CDN purge, framework revalidation, or a version bump the client sees on its next fetch. State the delay between "published" and "visible" in the spec and in the editor UI.
+- **Defaults stay in the public code.** The public product must work with the admin down, the endpoint failing or returning garbage: last good cached copy, then the defaults.
+- **Extract hard-coded values in the same change as the reader**, so the first publish reproduces today's behaviour exactly (a backfill that is checked, not assumed).
+- **Changing the public code is part of the module.** List the files in the spec. Keep the change small and reversible, run the public site's own test suite, and never let an admin-side failure break a public page.
+- **Service workers and PWAs:** do not cache the read endpoint beyond its `max-age`; build-time artefacts (manifest, icons) cannot be changed from the admin.
+- **Preview** uses a short-lived signed token with its own audience, `no-store`, never written to the public cache.
+
 ## Database constraints and performance
 
 - Enforce integrity in the DB: NOT NULL, FKs (with sensible `ON DELETE`), unique/partial-unique, CHECK (e.g. `stock >= 0`), enums or lookup tables for statuses.

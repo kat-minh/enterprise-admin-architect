@@ -69,7 +69,7 @@ Kèm ma trận role × quyền (ví dụ `orders.refund` chỉ dành cho Finance
 Kèm theo:
 - `admin-discovery/scripts/scan-project.mjs` - quét project (stack, route, API, model, enum/status, admin có sẵn, role, form công khai, **chỉ tên** biến môi trường).
 - `admin-qa-gate/scripts/validate-admin-docs.mjs` - kiểm tra tài liệu nhất quán (module ↔ quyền ↔ route ↔ spec ↔ bằng chứng verify).
-- `admin-discovery/references/domains/` - 14 playbook domain (e-commerce, du lịch/booking, giáo dục, corporate, tin tức, SaaS, marketplace, phòng khám/đặt lịch, bất động sản, tuyển dụng, F&B, sự kiện/vé, cộng đồng/UGC, fintech/KYC) và một playbook cho domain đặc thù.
+- `admin-discovery/references/domains/` - 15 playbook domain (e-commerce, app người dùng cuối/PWA, du lịch/booking, giáo dục, corporate, tin tức, SaaS, marketplace, phòng khám/đặt lịch, bất động sản, tuyển dụng, F&B, sự kiện/vé, cộng đồng/UGC, fintech/KYC) và một playbook cho domain đặc thù.
 - `scripts/bundle.mjs` - tạo prompt tự đủ cho từng phase, dành cho trợ lý chỉ có giao diện chat.
 - `examples/e-commerce/` - bộ `docs/admin` mẫu hoàn chỉnh, qua được validator.
 
@@ -144,7 +144,7 @@ node skills/admin-qa-gate/scripts/validate-admin-docs.mjs --root <project> --sta
 ## Các lớp module
 
 - **core** (bắt buộc với mọi web): xác thực & phiên, RBAC, dashboard theo nghiệp vụ, tài khoản admin, audit log, cài đặt, tài khoản/bảo mật cá nhân.
-- **foundation** (có điều kiện; loại bỏ phải nêu lý do): người dùng/khách hàng, thông báo, media, import/export, thùng rác, **site content** (menu, banner, trang tĩnh, SEO, redirect), **leads inbox** (form liên hệ), mẫu tin nhắn, giám sát job, tìm kiếm/command menu, đa ngôn ngữ.
+- **foundation** (có điều kiện; loại bỏ phải nêu lý do): người dùng/khách hàng, thông báo, media, import/export, thùng rác, **site content & UI** (chữ giao diện và bản dịch, thương hiệu và màu nhấn, banner, trang tĩnh, menu, SEO, redirect; có bản nháp, xem thử, xuất bản và quay lại; cho cả website **và app**), **leads inbox** (form, phản hồi, báo cáo), mẫu tin nhắn, **nhắn tin tới người dùng**, **job, tích hợp và sức khoẻ hệ thống**, **công tắc vận hành** (kill switch, feature flag, chế độ bảo trì), **yêu cầu quyền riêng tư**, tìm kiếm/command menu, đa ngôn ngữ.
 - **domain** (sinh từ website của bạn): Orders, Bookings, Courses, Articles, Organizations… hoặc module riêng cho nghiệp vụ đặc thù.
 
 ## Nguyên tắc thiết kế

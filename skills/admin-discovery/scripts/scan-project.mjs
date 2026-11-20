@@ -220,9 +220,26 @@ const TECH = {
     bullmq: 'BullMQ', bull: 'Bull', agenda: 'Agenda', 'node-cron': 'node-cron', inngest: 'Inngest', '@trigger.dev/sdk': 'Trigger.dev',
     'socket.io': 'Socket.IO', pusher: 'Pusher', ably: 'Ably', openai: 'OpenAI', '@anthropic-ai/sdk': 'Anthropic SDK',
     sharp: 'sharp', pdfkit: 'PDFKit', puppeteer: 'Puppeteer', exceljs: 'ExcelJS', xlsx: 'SheetJS', papaparse: 'PapaParse', 'csv-parse': 'csv-parse',
+    'pg-boss': 'pg-boss (job queue)', 'web-push': 'web-push (browser push)', multer: 'multer (uploads)', busboy: 'busboy (uploads)', formidable: 'formidable (uploads)',
+    'expo-server-sdk': 'Expo push', '@onesignal/node-onesignal': 'OneSignal', typesense: 'Typesense', '@elastic/elasticsearch': 'Elasticsearch',
+    winston: 'winston (logs)', pino: 'pino (logs)', 'express-rate-limit': 'express-rate-limit', helmet: 'helmet', 'posthog-node': 'PostHog (server)',
+  },
+  cms: {
+    '@sanity/client': 'Sanity', sanity: 'Sanity', '@strapi/strapi': 'Strapi', contentful: 'Contentful', payload: 'Payload CMS',
+    directus: 'Directus', '@directus/sdk': 'Directus SDK', '@keystatic/core': 'Keystatic', 'decap-cms-app': 'Decap CMS',
+    'netlify-cms-app': 'Netlify CMS', '@builder.io/sdk': 'Builder.io', 'ghost-content-api': 'Ghost', '@prismicio/client': 'Prismic',
+  },
+  flags: {
+    'launchdarkly-node-server-sdk': 'LaunchDarkly', '@launchdarkly/node-server-sdk': 'LaunchDarkly', 'launchdarkly-js-client-sdk': 'LaunchDarkly',
+    'unleash-client': 'Unleash', '@growthbook/growthbook': 'GrowthBook', 'flagsmith-nodejs': 'Flagsmith', '@vercel/flags': 'Vercel Flags', flags: 'Flags SDK',
+  },
+  pwa: {
+    'vite-plugin-pwa': 'vite-plugin-pwa (manifest generated at build)', 'next-pwa': 'next-pwa', '@serwist/next': 'Serwist', 'workbox-build': 'Workbox', 'workbox-window': 'Workbox',
   },
   i18n: {
     'next-intl': 'next-intl', i18next: 'i18next', 'react-i18next': 'react-i18next', 'next-i18next': 'next-i18next',
+    'react-intl': 'react-intl', '@formatjs/intl': 'FormatJS', 'vue-i18n': 'vue-i18n', '@lingui/core': 'Lingui', '@lingui/react': 'Lingui',
+    'svelte-i18n': 'svelte-i18n', '@ngx-translate/core': 'ngx-translate', 'i18n-js': 'i18n-js', 'typesafe-i18n': 'typesafe-i18n',
     'date-fns': 'date-fns', dayjs: 'dayjs', moment: 'Moment', luxon: 'Luxon',
   },
   testing: {
@@ -692,8 +709,103 @@ const uiComponents = FILES.filter((f) => /(^|\/)components\/ui\/[^/]+\.(tsx|jsx|
 const componentDirs = uniq(FILES.filter((f) => /(^|\/)components\/[^/]+\//.test(f)).map((f) => f.match(/(^|\/)components\/([^/]+)\//)[2]));
 const contentFiles = FILES.filter((f) => /(^|\/)(data|content|constants)\/[^/]+\.(json|ts|js|md|mdx|ya?ml)$/.test(f));
 
-const localeFiles = FILES.filter((f) => /(^|\/)(locales?|messages|i18n|lang|translations)\/[^/]+\.(json|ts|js|ya?ml)$/.test(f));
-const locales = uniq(localeFiles.map((f) => path.basename(f).replace(/\.\w+$/, ''))).filter((n) => /^[a-z]{2}(-[A-Za-z]{2,4})?$/.test(n));
+// dictionaries may be nested one level per language (i18n/en/home.ts) or per file (locales/en.json)
+const localeFiles = FILES.filter((f) => /(^|\/)(locales?|messages|i18n|lang|translations)\/(?:[^/]+\/)*[^/]+\.(json|ts|js|ya?ml)$/.test(f));
+const LANG_CODE = /^[a-z]{2}(-[A-Za-z]{2,4})?$/;
+const locales = uniq(localeFiles.flatMap((f) => {
+  const after = f.split(/(?:^|\/)(?:locales?|messages|i18n|lang|translations)\//).pop().split('/');
+  return [path.basename(f).replace(/\.\w+$/, ''), ...after.slice(0, -1)];
+})).filter((n) => LANG_CODE.test(n));
+
+// ----------------------------------------------------------------------------
+// UI surfaces: everything the end user sees that is edited in code today (candidates for a CMS-style module)
+// ----------------------------------------------------------------------------
+const I18N_LIBS = ['i18next', 'react-i18next', 'next-i18next', 'react-intl', '@formatjs/intl', 'vue-i18n', 'next-intl', '@lingui/core', 'svelte-i18n', '@ngx-translate/core', 'i18n-js', 'typesafe-i18n'];
+const SRC_RE = /\.(tsx?|jsx?|vue|svelte|astro|html)$/;
+const TCALL_RE = /(?:^|[^\w.$])(?:t|\$t|i18n\.t|translate|_)\(\s*(['"`])((?:\\.|(?!\1)[^\\\n]){2,}?)\1/g;
+const tKeys = new Map();
+let tCalls = 0;
+let tFiles = 0;
+for (const f of FILES.filter((x) => SRC_RE.test(x) && !/(^|\/)(node_modules|dist|build|\.next|coverage)\//.test(x)).slice(0, 4000)) {
+  const src = read(f, 300_000);
+  if (!src) continue;
+  let hit = false;
+  for (const m of src.matchAll(TCALL_RE)) {
+    if (/[\n]/.test(m[2]) || (m[1] === '`' && m[2].includes('${'))) continue;
+    tCalls++;
+    hit = true;
+    if (tKeys.size < 200_000) tKeys.set(m[2], (tKeys.get(m[2]) || 0) + 1);
+  }
+  if (hit) tFiles++;
+}
+const tokenFiles = [];
+for (const f of FILES.filter((x) => /\.(css|scss|less|pcss)$/.test(x) && !/(^|\/)(node_modules|dist|build)\//.test(x)).slice(0, 600)) {
+  const n = (read(f, 200_000).match(/--[a-zA-Z][\w-]*\s*:/g) || []).length;
+  if (n >= 10) tokenFiles.push({ file: f, customProperties: n });
+}
+const htmlHeads = [];
+for (const f of FILES.filter((x) => /(^|\/)(index|_document|layout)\.(html|tsx|jsx|vue)$/.test(x) || /(^|\/)public\/index\.html$/.test(x)).slice(0, 20)) {
+  const src = read(f, 100_000);
+  const title = (src.match(/<title>([^<]{1,160})<\/title>/i) || [])[1];
+  const description = (src.match(/<meta[^>]+name=["']description["'][^>]*content=["']([^"']{1,300})["']/i) || [])[1];
+  const themeColor = (src.match(/<meta[^>]+name=["']theme-color["'][^>]*content=["']([^"']+)["']/i) || [])[1];
+  if (title || description || themeColor) htmlHeads.push({ file: f, title, description, themeColor });
+}
+const manifestFiles = FILES.filter((f) => /(^|\/)(manifest\.json|[\w.-]*\.webmanifest)$/.test(f));
+// the NAME of the file, in any case style (UpdateBanner.tsx, cookie-banner.vue, announcement_bar.jsx)
+const bannerFiles = FILES.filter((f) => /(banner|announcement|notice-?bar|alert-?bar|promo-?bar)[\w-]*\.(tsx|jsx|vue|svelte|astro|js|ts)$/i.test(path.basename(f)) && !/(^|\/)(node_modules|dist|build)\/|\.(test|spec)\./.test(f));
+const markdownPages = FILES.filter((f) => /(^|\/)(content|pages|posts|blog|articles)\/.*\.(md|mdx)$/i.test(f) && !/(^|\/)(README|CHANGELOG|LICENSE)/i.test(f));
+const uiSurfaces = {
+  translation: {
+    libraries: I18N_LIBS.filter((l) => deps[l]),
+    translateCalls: tCalls,
+    distinctStrings: tKeys.size,
+    filesUsingTranslate: tFiles,
+    dictionaryFiles: cap(localeFiles, 30),
+    languages: locales,
+    note: tCalls > 0 && !I18N_LIBS.some((l) => deps[l]) ? 'Custom translation function (no i18n library): the key is probably the source-language text.' : null,
+  },
+  theme: { tokenFiles: cap(tokenFiles, 10), tailwindConfig: FILES.filter((f) => /(^|\/)tailwind\.config\.\w+$/.test(f)) },
+  brand: { htmlHeads: cap(htmlHeads, 5), manifests: manifestFiles, pwaPlugin: Object.keys(deps).filter((d) => /pwa|workbox/.test(d)) },
+  banners: cap(bannerFiles, 20),
+  // site/brand/plan/navigation constants and public config files that a business owner may want to change
+  configFiles: cap(FILES.filter((f) => (/(^|\/)(site|siteconfig|site\.config|plans?|pricing|navigation|nav|menu|footer|theme|branding|copy|strings)\.(tsx?|jsx?|json|ya?ml)$/i.test(f)
+    || /(^|\/)(public|static)\/(robots\.txt|manifest\.json|[\w.-]*\.webmanifest)$/.test(f)
+    || /(^|\/)(config|settings)\/(?!env\.|database\.|db\.|index\.)[^/]+\.(tsx?|jsx?|json|ya?ml)$/i.test(f))
+    && !/(\.test\.|\.spec\.|\.d\.ts$|(^|\/)node_modules\/)/.test(f)), 30),
+  staticContent: { markdownPages: cap(markdownPages, 30), infoPageRoutes: cap(uniq(pageRoutes.map((r) => r.route).filter((r) => /terms|privacy|about|faq|contact|policy|legal|help/i.test(r))), 20) },
+};
+
+// ----------------------------------------------------------------------------
+// Operations: things operators end up doing by hand (schedules, webhooks, outbound messages, uploads, switches, limits)
+// ----------------------------------------------------------------------------
+const SCHEDULER_RE = /\b(cron\.schedule|new CronJob|@Cron\(|schedule\.scheduleJob|agenda\.every|boss\.schedule|new Queue\(|new Worker\()/;
+const SEND_RE = /(\.sendMail\(|sgMail\.send|resend\.emails\.send|\.emails\.send\(|webpush\.sendNotification|sendNotification\(|messages\.create\(|\.sendMulticast\(|messaging\(\)\.send)/;
+const UPLOAD_RE = /(multer\(|upload\.(single|array|fields)\(|new busboy|Busboy\(|formidable\(|createPresignedPost|getSignedUrl\()/;
+const LIMITER_RE = /(rateLimit\(|rateLimiter\(|RateLimiterMemory|new Ratelimit\()/;
+const ENV_USE_RE = /(?:process\.env|import\.meta\.env)\.([A-Z][A-Z0-9_]+)/g;
+const GATE_RE = /^(FEATURE_|ENABLE_|DISABLE_|ALLOW_|DISALLOW_|USE_|IS_)|(_ENABLED|_DISABLED|_OFF|_ON|_MODE)$/;
+const ops = { schedulers: new Set(), messageSends: new Set(), uploads: new Set(), rateLimiters: new Set() };
+const envInCode = new Set();
+for (const f of FILES.filter((x) => /\.(tsx?|jsx?|mjs|cjs)$/.test(x) && !/(^|\/)(node_modules|dist|build|\.next|coverage)\/|\.test\.|\.spec\./.test(x)).slice(0, 4000)) {
+  const src = read(f, 300_000);
+  if (!src) continue;
+  if (SCHEDULER_RE.test(src) || (/\bsetInterval\(/.test(src) && !/\.(tsx|jsx)$/.test(f) && /(^|\/)(server|api|jobs?|workers?|cron|lib|services?)\//.test(f))) ops.schedulers.add(f);
+  if (SEND_RE.test(src)) ops.messageSends.add(f);
+  if (UPLOAD_RE.test(src)) ops.uploads.add(f);
+  if (LIMITER_RE.test(src)) ops.rateLimiters.add(f);
+  for (const m of src.matchAll(ENV_USE_RE)) envInCode.add(m[1]);
+}
+const vercelCrons = filesMatching(/(^|\/)vercel\.json$/).filter((f) => /"crons"\s*:/.test(read(f)));
+const operations = {
+  schedulers: cap([...ops.schedulers, ...vercelCrons], 30),
+  webhookRoutes: cap(uniq(apiRoutes.map((r) => r.path).filter((p) => /webhook/i.test(p))), 20),
+  messageSends: cap([...ops.messageSends], 30),
+  uploads: cap([...ops.uploads], 20),
+  rateLimiters: cap([...ops.rateLimiters], 20),
+  envUsedInCode: cap([...envInCode].sort(), 120),
+  envGates: [...envInCode].filter((n) => GATE_RE.test(n)).sort().slice(0, 40),
+};
 
 const seedFiles = FILES.filter((f) => /(^|\/)(seed|seeds|seeders|fixtures)(\/|\.)|seed\.(ts|js|py|rb|sql)$/i.test(f));
 const envExamples = FILES.filter((f) => /(^|\/)\.env\.(example|sample|template|local\.example)$/.test(f));
@@ -717,6 +829,7 @@ const DOMAIN_KEYWORDS = {
   'fnb-ordering': ['menu', 'menuitem', 'reservation', 'table', 'kitchen', 'dish', 'branch'],
   'events-ticketing': ['event', 'ticket', 'attendee', 'venue', 'checkin', 'speaker', 'session', 'seat'],
   'community-ugc': ['thread', 'report', 'moderation', 'ban', 'reputation', 'follow', 'reaction', 'group', 'flag'],
+  'consumer-app': ['onboarding', 'referral', 'device', 'feedback', 'push', 'invite', 'share', 'profile', 'install', 'sync'],
   'fintech-kyc': ['wallet', 'transaction', 'kyc', 'loan', 'ledger', 'account', 'transfer', 'deposit', 'withdrawal'],
 };
 function tokens(name) {
@@ -729,6 +842,10 @@ const domainHints = Object.entries(DOMAIN_KEYWORDS).map(([domain, kws]) => {
   const matched = kws.filter((k) => bag.has(k) || bag.has(k.replace(/s$/, '')));
   return { domain, score: matched.length, keywords: matched };
 }).filter((d) => d.score >= 2).sort((a, b) => b.score - a.score).slice(0, 4);
+// structural signal for consumer apps: few tables, so keywords alone rarely match
+if ((uiSurfaces.brand.pwaPlugin.length || deps['web-push'] || deps['expo-server-sdk']) && !domainHints.some((d) => d.domain === 'consumer-app')) {
+  domainHints.push({ domain: 'consumer-app', score: 2, keywords: ['(installable PWA / push signals: confirm with the owner)'] });
+}
 if (stack.integrations?.some((i) => /Stripe|PayPal/.test(i.name))) {
   for (const d of domainHints) if (['ecommerce', 'saas', 'fintech-kyc', 'marketplace'].includes(d.domain)) d.keywords.push('(payment SDK present)');
 }
@@ -770,6 +887,8 @@ const report = {
   sharedUI: { uiComponents: cap(uiComponents, 80), componentDirs: cap(componentDirs, 40) },
   contentFiles: cap(contentFiles, 40),
   i18n: { localeFiles: cap(localeFiles, 20), locales },
+  uiSurfaces,
+  operations,
   seedFiles: cap(seedFiles, 20),
   env: { files: envExamples, namesOnly: uniq(envNames) },
   domainHints,
@@ -786,7 +905,7 @@ function toMarkdown(r) {
   L.push(`Files scanned: ${r.fileCount}  |  ${r.note}`);
   L.push('', '## Stack');
   L.push(`- Languages: ${r.stack.languages.join(', ') || '-'}`);
-  for (const k of ['framework', 'backend', 'ui', 'table', 'forms', 'data', 'charts', 'editor', 'auth', 'database', 'integrations', 'i18n', 'testing']) if (r.stack[k]) L.push(`- ${k}: ${names(r.stack[k])}`);
+  for (const k of ['framework', 'backend', 'ui', 'table', 'forms', 'data', 'charts', 'editor', 'auth', 'database', 'integrations', 'cms', 'flags', 'pwa', 'i18n', 'testing']) if (r.stack[k]) L.push(`- ${k}: ${names(r.stack[k])}`);
   L.push('', '## Domain hints (heuristic)');
   if (r.domainHints.length) for (const d of r.domainHints) L.push(`- ${d.domain} (score ${d.score}): ${d.keywords.join(', ')}`);
   else L.push('- none matched -> use references/domains/_custom-domain-playbook.md');
@@ -822,6 +941,26 @@ function toMarkdown(r) {
   L.push(`- locales: ${r.i18n.locales.join(', ') || '-'}`);
   L.push(`- seed files: ${r.seedFiles.join(', ') || '-'}`);
   L.push(`- env var names (.env.example): ${r.env.namesOnly.join(', ') || '-'}`);
+  const ui = r.uiSurfaces;
+  L.push('', '## UI surfaces (CMS candidates: ask the user what they change by editing code today)');
+  L.push(`- translation: ${ui.translation.translateCalls} translate calls, ${ui.translation.distinctStrings} distinct strings in ${ui.translation.filesUsingTranslate} files; libraries: ${ui.translation.libraries.join(', ') || 'none'}; languages: ${ui.translation.languages.join(', ') || '-'}${ui.translation.note ? `  (${ui.translation.note})` : ''}`);
+  if (ui.translation.dictionaryFiles.length) L.push(`- dictionaries: ${ui.translation.dictionaryFiles.slice(0, 8).join(', ')}${ui.translation.dictionaryFiles.length > 8 ? ', ...' : ''}`);
+  L.push(`- theme tokens: ${ui.theme.tokenFiles.map((t) => `${t.file} (${t.customProperties} custom properties)`).join(', ') || '-'}${ui.theme.tailwindConfig.length ? `; tailwind config: ${ui.theme.tailwindConfig.join(', ')}` : ''}`);
+  L.push(`- brand: ${ui.brand.htmlHeads.map((h) => `${h.file} title="${h.title || ''}"`).join('; ') || '-'}; manifests: ${ui.brand.manifests.join(', ') || (ui.brand.pwaPlugin.length ? `generated at build (${ui.brand.pwaPlugin.join(', ')})` : '-')}`);
+  L.push(`- banner / announcement components: ${ui.banners.join(', ') || 'none found'}`);
+  L.push(`- static content: ${[...ui.staticContent.markdownPages, ...ui.staticContent.infoPageRoutes].join(', ') || '-'}`);
+  if (ui.configFiles.length) L.push(`- config / constants files a business may own: ${ui.configFiles.join(', ')}`);
+  const op = r.operations;
+  L.push('', '## Operations (what operators likely do by hand today)');
+  L.push(`- schedulers / queues: ${op.schedulers.join(', ') || '-'}`);
+  L.push(`- webhook routes: ${op.webhookRoutes.join(', ') || '-'}`);
+  L.push(`- outbound mail / SMS / push call sites: ${op.messageSends.join(', ') || '-'}`);
+  L.push(`- upload handlers: ${op.uploads.join(', ') || '-'}`);
+  L.push(`- rate limiters: ${op.rateLimiters.join(', ') || '-'}`);
+  L.push(`- env switches read in code (boolean-looking): ${op.envGates.join(', ') || '-'}`);
+  L.push(`- all env names read in code: ${op.envUsedInCode.join(', ') || '-'}`);
+  L.push('- Known blind spots: Express `router.route().get().post()` chains, routes with a constant path, and submissions that use fetch from a click handler (no <form>) are not listed; read the router and the components before concluding something is absent.');
+  L.push('- Classify each surface as CMS, code or build-time in product-discovery.md ("Content & configuration inventory"); read admin-discovery/references/site-content-and-config.md. Never exclude `site-content` without the user saying so.');
   if (r.warnings.length) { L.push('', '## Warnings'); for (const w of r.warnings) L.push(`- ${w}`); }
   return L.join('\n');
 }

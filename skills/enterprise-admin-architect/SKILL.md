@@ -60,7 +60,7 @@ Details of each gate, scaling for small sites and the "just build it" fast path:
 
 ## Gate protocol
 
-At each gate: present a **short** summary (what was produced, key decisions, assumptions, open questions with a recommended default for each), then ask for approval with your tool's question/choice UI if it has one, otherwise as a short numbered list. Ask ≤ 7 targeted questions, never open-ended "what do you want?". Record answers in the docs.
+At each gate: present a **short** summary (what was produced, key decisions, assumptions, open questions with a recommended default for each), then ask for approval with your tool's question/choice UI if it has one, otherwise as a short numbered list. Ask ≤ 7 targeted questions per gate. Closed, concrete questions about the owner's **daily work** are required and are separate from that cap: the one-time **owner intake** in discovery (what do you change by editing code today? what would you rather do yourself?), and one plain yes/no question per excluded foundation module. Never a vague open-ended "what do you want?". Record answers in the docs.
 
 If the user says "just build it / làm luôn": still do discovery (compact), write assumptions into the docs, ask only the blocking questions, and continue. **Never skip** permission enforcement, audit logging, or the verification step.
 

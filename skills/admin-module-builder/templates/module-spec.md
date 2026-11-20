@@ -29,6 +29,16 @@ Scopes: <own / team / all, if any>
 
 Backend work required: <implement / document / none>
 
+## Public-site integration
+Fill for every module whose data the public product renders or enforces (content, configuration, flags, catalogue, availability, banners). Write `N/A - admin-only` if the public product never reads it.
+- **Public read path:** <endpoint or build hook; published data only, never drafts or staff identity>
+- **Caching and invalidation:** <ETag / version, max-age, CDN purge or revalidation on publish, service-worker handling>
+- **When a change takes effect:** <seconds / next app start / next build; stated to the editor>
+- **Fallback:** <what the public product does when the read path fails: cached copy, then code defaults>
+- **Backfill:** <how today's hard-coded values are extracted, in the same change as the reader>
+- **Preview and rollback:** <how an editor sees the change before users do; how it is undone>
+- **Public code changed:** <files, in the public repo or app, that now read admin-managed values>
+
 ## List page
 - **Search fields:** 
 - **Filters:** 

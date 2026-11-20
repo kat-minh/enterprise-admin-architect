@@ -110,6 +110,10 @@ Recipe:
 
 Typical findings: per-row counts (`LEFT JOIN LATERAL (SELECT count(*) …)`) evaluated for every row the database walks, so a deep page pays for all the skipped rows and "sort by count" pays for the whole table → page the keys first and attach counts to that page only (see `admin-module-builder/references/backend-contract.md`); search that is a sequential scan; a dashboard that issues one query per tile.
 
+## Admin-managed public content (CMS, flags, banners)
+
+For every module whose data the public product renders: (1) edit in the admin and **look at the public product in a real browser** (and the installed PWA, if there is one): the change appears within the documented time, in each language; (2) a draft is invisible until published, and preview shows it without touching the cache; (3) rollback restores the previous state; (4) take the read endpoint down, make it slow, make it return garbage: the product still renders from defaults, with no console errors; (5) text that is built at module load time (constants, lazily imported screens) is covered, not only the text rendered inside components; (6) an XSS payload typed into a text, banner or brand field is displayed as text; (7) a service worker does not keep serving the old content past the documented time. Record the measured delay in `qa-report.md`.
+
 ## Public-site regression
 
 Run the project's existing test suite. Smoke the public routes (list from the scan output) for 200 status and absence of console errors. Verify login/checkout/forms still work and that public bundles do not include admin code (check build output or bundle analyser).
