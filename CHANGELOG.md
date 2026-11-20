@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.2 - 2026-11-21
+
+Lessons from building and verifying a full-stack admin (real backend, separate admin app, UI end-to-end run).
+
+- QA playbook: pitfalls when automating admin UIs (skeleton rows count as rows, wait for overlay animations, login limiters block reruns, reseed after state-changing tests, explicit local-only seed database, scoped locators, browser-locale date inputs, treat a delegated agent's report as a claim).
+- Module builder: re-run checks and review the diff of shared/public code after delegating work to sub-agents.
+- Design system: revealed sensitive data gets its own block (not the header actions); clickable table rows must be keyboard-operable.
+
 ## 1.2.1 - 2026-11-20
 
 Fixes and guidance from a first run on a real two-repo project (Express + PostgreSQL backend, Vite PWA frontend, no existing admin).

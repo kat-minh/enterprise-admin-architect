@@ -90,6 +90,7 @@ Response: `{ data: T[], meta: { total, page, pageSize, totalPages } }` (or `next
 ## Responsive & accessibility
 
 - ≥ 1280: full table. 768-1279: hide low-priority columns (column visibility defaults per breakpoint), horizontal scroll inside table container only. < 768: convert to card/list rows with key fields and actions.
+- A row that opens a preview must be keyboard-operable (`tabindex="0"`, Enter/Space opens it, links inside keep their own behaviour) and focus returns to that row when the drawer closes. Skeleton rows must not be clickable.
 - Semantic `<table>`/ARIA grid roles, `th scope`, `aria-sort`, selection checkboxes labelled ("Select order #1042"), live region announcing result count ("42 results"), full keyboard support (Tab, Space to select, Enter to open, optional `j/k`).
 
 ## Acceptance checklist

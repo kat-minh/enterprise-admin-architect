@@ -40,6 +40,10 @@ Use tabs only for **meaningful information groups** (Overview · Items · Paymen
 
 Width 480-640px, header with title + status + "Open full page", compact key facts, 1-3 quick actions (status, assignee, note), recent timeline items. URL-addressable (`?drawer=<id>`), closes with Esc, focus returns to the originating row, keyboard prev/next record where useful.
 
+## Sensitive data on a detail page
+
+Personal data is masked by default and revealed only after a reason is given (written to the audit log). Show the revealed data in **its own block below the header** - not inside the header's action area, which squeezes it into a narrow, misaligned box - say that the view was logged, and mask it again automatically after about a minute or when another record is opened.
+
 ## Danger zone & actions
 
 - Prefer **archive/soft delete** with restore; hard delete only for specific permissions and after dependency checks ("12 orders reference this product - archive instead").

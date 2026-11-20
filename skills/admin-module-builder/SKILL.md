@@ -56,7 +56,7 @@ Do not build the whole admin in one uncontrolled pass. After each module: self-v
 **G. Verify and record.** Run typecheck, lint, build and existing tests; exercise the workflow in the running app (browser tools if available); call the API without the permission and expect 403; test empty/error/large states. Update `docs/admin/implementation-status.md` with evidence, then set the module `Status` in `module-inventory.md`. Hand off the module checklist to `admin-qa-gate`. Mark `done` only when the business workflow works.
 
 ## Parallelising large builds
-For many modules, if your tool supports sub-agents, delegate independent modules to them. Brief each with: the module spec, the reference module path, the shared components, the permission keys, the rules above, and the requirement to run checks and report evidence. Review their output against the spec before marking done. Do not parallelise modules that share new schema/migrations or permission infrastructure.
+For many modules, if your tool supports sub-agents, delegate independent modules to them. Brief each with: the module spec, the reference module path, the shared components, the permission keys, the rules above, and the requirement to run checks and report evidence. Review their output against the spec before marking done. Do not parallelise modules that share new schema/migrations or permission infrastructure. **Treat a sub-agent's report as a claim, not evidence:** re-run the type check and all test suites yourself, and read the diff of every change that touches shared or public code (authentication, middleware, shared libraries) before recording anything as verified.
 
 ## Hard rules
 - Server-side authorization on every sensitive operation; UI gating is cosmetic.

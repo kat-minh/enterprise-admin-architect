@@ -20,7 +20,7 @@ Read when: step 3 of `admin-qa-gate`. Patterns use Playwright/TypeScript; adapt 
 
 - Seed **dev/test only** (never prod): one user per role in `permission-matrix.md` (`super_admin@test`, `support@test`, …) with known passwords from env, plus realistic domain data covering each lifecycle state (an order in every status, an unpaid booking, an expired hold…).
 - Include edge records: very long names (Vietnamese diacritics), zero-quantity items, archived records, records owned by another user (for `own` scope).
-- Seed script is idempotent and documented in `implementation-status.md`.
+- Seed script is idempotent, refuses non-local databases, requires an explicit `DATABASE_URL`, and is documented in `implementation-status.md` (dev credentials live in the seed file, not in chat or docs).
 - Generate bulk data separately for the scale test (10k-100k rows).
 
 ## Authenticating per role
@@ -114,6 +114,19 @@ When using a browser-automation tool (Playwright, a browser MCP server, or an ag
 4. Capture screenshots at the four widths for representative pages.
 5. Avoid triggering native `alert/confirm/prompt` (they block the session); use the app's own dialogs.
 6. Write down each step and result; these notes are the evidence.
+
+## Pitfalls when automating admin UIs
+
+Learned from running the suite against a real app; each of these produced a false failure or a misleading screenshot.
+
+- **Skeleton rows are rows.** A table that shows 8 skeleton rows while loading satisfies "rows > 0". Wait for the loaded state (no skeleton cells, real links present) before counting, clicking or asserting; otherwise the test passes or fails by timing luck.
+- **Let overlays settle before screenshots.** Drawers, dialogs and off-canvas navigation animate for ~150 ms; a screenshot taken immediately shows a half-transparent drawer that looks like a bug. Wait ~400 ms, or emulate `prefers-reduced-motion`.
+- **A good login limiter blocks your own reruns.** Per-IP and per-account limits (and lockouts) are correct behaviour; a suite that logs in per test will hit them on the second run. Reuse authenticated sessions (storage state), restart the dev server between runs, or use a test-only setting. Never weaken the production limiter to make tests pass.
+- **State-changing tests need a reseed.** Suspensions, password changes and role edits leave the database different from the seed. Make the seed idempotent (it replaces its own rows) and run it before each suite.
+- **Scope locators.** The same label can appear twice (toolbar "Clear filters" and the empty-state button). Strict locators fail loudly; scope them to the region instead of taking `.first()`.
+- **Never test against a database you did not name.** The seed must require an explicit `DATABASE_URL`, refuse any non-local host, and use its own port; developers often already run a local database on the default port.
+- **Check what the browser's locale does.** Native date inputs render in the browser's language (`mm/dd/yyyy` in an English headless browser); decide whether that is acceptable for the operators.
+- **A delegated agent's report is a claim.** If part of the build was delegated, re-run the type check and every test suite yourself and read the diff of anything touching shared or public code before recording evidence.
 
 ## Recording evidence
 
