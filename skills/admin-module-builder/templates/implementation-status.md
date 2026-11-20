@@ -12,8 +12,10 @@
 | auth | no | - | partial | not started |
 
 ## Backend status
-| Module ID | Endpoints implemented | Endpoints missing | Owner (repo/external) |
-|---|---|---|---|
+`Data source`: `api` (real backend) · `mock` (fe-first prototype adapter; module must be `prototype`, never `done`)
+
+| Module ID | Data source | Endpoints implemented | Endpoints missing | Owner (repo/external) |
+|---|---|---|---|---|
 
 ## Dependencies added
 | Package | Version | Reason | Module |
@@ -28,6 +30,10 @@
 | Unit/API tests | | | |
 | E2E | | | |
 | Docs validator | `node <skills-dir>/admin-qa-gate/scripts/validate-admin-docs.mjs --stage build` | | |
+
+## FE-first tracking (only if delivery mode = fe-first)
+- Gate 2b (FE Preview): pending | approved on <YYYY-MM-DD> · API contract: v0 | v1 frozen
+- Modules still on mock: <ids> · Environment guard verified: yes/no · Mock excluded from production bundle: yes/no
 
 ## Session log
 - <date> - <what was done, decisions, blockers>

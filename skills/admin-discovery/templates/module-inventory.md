@@ -6,7 +6,8 @@
 **Layer:** `core` | `foundation` | `domain`
 **Evidence:** `confirmed` | `implied` | `proposed`
 **Priority:** `P0` | `P1` | `P2`
-**Status:** `proposed` | `planned` | `in-progress` | `done` | `blocked` | `dropped` | `exists`
+**Status:** `proposed` | `planned` | `in-progress` | `prototype` | `done` | `blocked` | `dropped` | `exists`
+(`prototype` = UI finished on the mock data layer in `fe-first` mode, backend pending; never counts as done)
 
 | ID | Module | Layer | Evidence | Priority | Source / Justification | Depends on | Status |
 |----|--------|-------|----------|----------|------------------------|------------|--------|

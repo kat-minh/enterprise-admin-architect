@@ -9,8 +9,24 @@ Goal: ship each module as a **working business capability** - real API, server-s
 
 Preconditions (verify, do not assume): `module-inventory.md`, `information-architecture.md`, `permission-matrix.md`, `design-system.md` exist and Gates 1-2 are approved. Check with `node <skills-dir>/admin-qa-gate/scripts/validate-admin-docs.mjs --root <project> --stage design` (`<skills-dir>` = the folder that contains the `admin-*` skill directories). If missing, go back to the earlier skill instead of improvising.
 
-Templates: `templates/module-spec.md`, `templates/implementation-status.md`.
-References (read when relevant): `references/module-archetypes.md`, `references/rbac-implementation.md`, `references/backend-contract.md`, `references/audit-logging.md`, `references/security-baseline.md`.
+Templates: `templates/module-spec.md`, `templates/implementation-status.md`, `templates/api-contract.md`.
+References (read when relevant): `references/module-archetypes.md`, `references/rbac-implementation.md`, `references/backend-contract.md`, `references/audit-logging.md`, `references/security-baseline.md`, `references/fe-first-mock-layer.md`.
+
+## Delivery mode (check `product-discovery.md` §9)
+
+- `full-stack` → the loop below as written (real APIs).
+- `fe-first` → the user wants to approve the UI before any backend exists. Run the **FE-first loop** in the next section, stop at **Gate 2b (FE Preview)**, then run the normal loop's backend steps against the frozen contract. Read `references/fe-first-mock-layer.md` first.
+
+## FE-first loop (per module, `fe-first` only)
+
+1. **Specify** (A) - the module spec's "API dependencies" becomes the contract.
+2. **Contract** - add the endpoints to `docs/admin/api-contract.md` + zod schemas (`templates/api-contract.md`).
+3. **Mock adapter** - implement the service interface in-memory with server-like behaviour (pagination/filter/sort, 422/403/409, latency, state machine, audit entries) and synthetic fixtures derived from the real schema.
+4. **UI** (E) - exactly as in the loop, through the service layer only; "Prototype data" banner, role switcher, scenario toggles come from the shared `PrototypeToolbar`.
+5. **Record** - inventory `Status = prototype`; implementation-status Backend table `Data source = mock`; `Verified` stays `no`/`partial` (UI reviewed, backend absent).
+6. After all P0/P1 modules → **Gate 2b**: present the prototype + review script + contract summary; iterate; freeze contract v1. Then for each module do steps **B-D, F, G** against the frozen contract, flip Data source to `api`, and only then mark `done`.
+
+Never mark a mock-backed module `done`, and never let the mock layer run in production (environment guard + build check).
 
 ## Build order
 
@@ -44,7 +60,7 @@ For many modules, delegate independent modules to subagents. Brief each with: th
 
 ## Hard rules
 - Server-side authorization on every sensitive operation; UI gating is cosmetic.
-- No fake data, fake success, or silently swallowed errors.
+- No fake data, fake success, or silently swallowed errors. (Only exception: the labelled, production-blocked mock adapter of `fe-first` mode.)
 - No hard delete of business records by default; archive/soft-delete with restore.
 - Do not break the public site, existing auth, API contracts or design system; prefer additive changes and migrations that are reversible.
 - Any new dependency needs a one-line justification in `design-system.md` or `implementation-status.md`.

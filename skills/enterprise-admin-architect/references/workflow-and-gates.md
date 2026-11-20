@@ -24,7 +24,7 @@ Skills: `admin-discovery`, then `admin-information-architecture`.
 4. Admin personas/roles and the permission matrix headline.
 5. Sidebar tree (≤ 9 top-level groups).
 6. Backend gap list (endpoints/tables missing for P0/P1 modules) and who builds them.
-7. Open questions - max 7, each with a recommended default.
+7. Open questions - max 7, each with a recommended default. Always include **delivery mode** (`full-stack` vs `fe-first`; recommend `fe-first` when most P0 endpoints are missing or the user wants to review the UI first).
 
 **Approval unlocks:** Session 2. If the user changes scope, update `module-inventory.md` first, then re-derive IA/permissions.
 
@@ -32,7 +32,7 @@ Skills: `admin-discovery`, then `admin-information-architecture`.
 
 Skill: `admin-design-system`.
 
-Produce tokens, app shell (sidebar/header/breadcrumb/command menu), shared components (DataTable, FilterBar, Form patterns, Drawer, ConfirmDialog, StatusBadge, EmptyState, PermissionGate, Timeline), then build **one reference module end-to-end as a vertical slice** (list → preview drawer → detail → form) using real data. This slice is the template every other module copies.
+Produce tokens, app shell (sidebar/header/breadcrumb/command menu), shared components (DataTable, FilterBar, Form patterns, Drawer, ConfirmDialog, StatusBadge, EmptyState, PermissionGate, Timeline), then build **one reference module end-to-end as a vertical slice** (list → preview drawer → detail → form) using real data (`full-stack`) or the typed mock adapter (`fe-first`, see below). This slice is the template every other module copies.
 
 **Present at Gate 2:** screenshots (use browser automation if available) of dashboard, list, detail, form; the token table; deviations from the existing design system and why.
 
@@ -47,6 +47,21 @@ Order: foundation (shell/auth guard/permission infra/audit service) → `core` m
 After **each module**: run `admin-qa-gate` module checks, update `implementation-status.md`. Do not batch QA to the end.
 
 **Present at Gate 3:** the final report (see SKILL.md) + `qa-report.md`.
+
+## FE-first delivery mode (UI approved before any backend)
+
+Choose at Gate 1 when the user wants to *see the admin first*, or most P0 endpoints/tables don't exist yet. Full mechanics: `admin-module-builder/references/fe-first-mock-layer.md`.
+
+| Stage | What happens |
+|---|---|
+| Session 1 | Unchanged. Gate 1 also records `delivery mode = fe-first` and lists the backend work that is *deferred* (gap list becomes the backend backlog). |
+| Session 2 | Tokens, shell, shared components, reference module on the **mock adapter** (service interface + zod schemas + fixtures). Gate 2 as usual. |
+| Session 3a - FE build | Per module: spec → write endpoints into `api-contract.md` → mock adapter + fixtures → UI. Inventory status `prototype`. No backend code yet. |
+| **Gate 2b - FE Preview** | Present a clickable prototype (local or protected preview URL) with role switcher and state toggles, a 5-8 flow review script, and the API contract summary. Iterate on feedback. **Approval freezes the contract (v1).** |
+| Session 3b - BE build | Implement DB/endpoints/authz/audit to the frozen contract; swap mock → real per module; run `admin-qa-gate` per module; status `prototype` → `done`. |
+| Gate 3 | Final report; permission tests against the real API. |
+
+Rules: mock data only inside the adapter; always labelled "Prototype data"; emulates pagination/validation/403/409/latency; blocked in production by an environment guard; `prototype` modules can never be reported as done or as "working" - say "UI prototype, backend pending" in every handoff.
 
 ## Scaling the process
 
@@ -65,7 +80,7 @@ After **each module**: run `admin-qa-gate` module checks, update `implementation
 
 ## Status vocabulary (use exactly)
 
-- Module `Status`: `proposed` → `planned` → `in-progress` → `done` | `blocked` | `dropped` | `exists` (pre-existing admin module kept as is).
+- Module `Status`: `proposed` → `planned` → `in-progress` → `done` | `blocked` | `dropped` | `exists` (pre-existing admin module kept as is). `fe-first` adds `prototype` (UI complete on the mock adapter, backend pending): `planned` → `prototype` → `done`.
 - `Evidence`: `confirmed` | `implied` | `proposed`.
 - `Priority`: `P0` (admin cannot operate without it), `P1` (needed within first weeks of operation), `P2` (nice-to-have/scale).
 - Verified (implementation-status): `yes` only with evidence (command output, test name, screenshot, manual walkthrough note); otherwise `no`/`partial`.

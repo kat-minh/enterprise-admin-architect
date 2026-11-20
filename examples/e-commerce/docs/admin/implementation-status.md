@@ -12,10 +12,12 @@
 | orders | no | spec approved; list endpoint in progress | partial | transitions, refund endpoints missing |
 
 ## Backend status
-| Module ID | Endpoints implemented | Endpoints missing | Owner (repo/external) |
-|---|---|---|---|
-| auth | login, logout, session | MFA | repo |
-| orders | detail (partial) | list, transitions, refund | repo |
+`Data source`: `api` (real backend) · `mock` (fe-first prototype adapter; module must be `prototype`, never `done`)
+
+| Module ID | Data source | Endpoints implemented | Endpoints missing | Owner (repo/external) |
+|---|---|---|---|---|
+| auth | api | login, logout, session | MFA | repo |
+| orders | api | detail (partial) | list, transitions, refund | repo |
 
 ## Dependencies added
 | Package | Version | Reason | Module |

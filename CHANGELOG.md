@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0 - 2026-11-20
+
+- **FE-first delivery mode**: build and approve the admin UI on a typed mock data layer before any backend, then build the backend to a frozen API contract.
+  - New: `admin-module-builder/references/fe-first-mock-layer.md`, `templates/api-contract.md`, **Gate 2b (FE Preview)**.
+  - New module status `prototype` (never counts as done); QA checklist §P.
+  - Validator: `prototype` requires a spec and `api-contract.md`; `done` is rejected while Data source is `mock`; unfinished prototypes fail at final stage.
+  - Orchestrator rule 6 now allows mock data only inside the labelled, production-blocked mock adapter.
+
 ## 1.0.0 - 2026-11-20
 
 Initial release of the Enterprise Admin Architect skill suite.

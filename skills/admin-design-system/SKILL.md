@@ -34,7 +34,7 @@ Implement only what the inventory needs, to the specs in:
 Plus: StatusBadge, ConfirmDialog (3 risk levels), PermissionGate, EmptyState, ErrorState, Skeletons, Drawer, FileUploader, Money/DateTime/ID display helpers.
 
 ### 5. Build the reference module (vertical slice)
-Pick the most representative P0 domain module. Implement with **real data**: list (server-side pagination/filter/sort, URL state) → preview drawer → detail page → create/edit form → permissions → loading/empty/error states → responsive. This is the pattern every module copies, so get it right now. Verify with the browser (screenshots) when browser tools are available; otherwise give the user run instructions.
+Pick the most representative P0 domain module. Implement with **real data** (`full-stack`) or, in `fe-first` mode, through the typed mock adapter described in `admin-module-builder/references/fe-first-mock-layer.md` (service interface + zod schemas + server-like mock + "Prototype data" banner): list (server-side pagination/filter/sort, URL state) → preview drawer → detail page → create/edit form → permissions → loading/empty/error states → responsive. This is the pattern every module copies, so get it right now. Verify with the browser (screenshots) when browser tools are available; otherwise give the user run instructions.
 
 ### 6. Document and present Gate 2
 Fill `design-system.md` (tokens table, component catalogue with usage rules, patterns, deviations). Show screenshots of dashboard, list, drawer, detail, form. Validate: `node <skills-dir>/admin-qa-gate/scripts/validate-admin-docs.mjs --root <project> --stage design` (`<skills-dir>` = the folder that contains the `admin-*` skill directories). Wait for approval before mass-producing modules.

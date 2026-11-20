@@ -49,7 +49,7 @@ List who will operate (super admin, content editor, support, finance, ops…) an
 For each P0/P1 module list the endpoints/tables/jobs it needs and mark `exists` / `partial` / `missing` with the file evidence. Note authz, pagination/filter/sort support, audit hooks, soft-delete, file storage. Decide per gap: implement (repo owns backend) or document (external backend).
 
 ### 9. Open questions
-Max 7. Each: question · why it matters · recommended default. Examples: where does data live; which roles exist; is X workflow really needed; multi-language admin; payment reconciliation owner.
+Max 7. Each: question · why it matters · recommended default. Always ask **delivery mode** (`full-stack` vs `fe-first` - build and approve the UI on a mock layer before any backend; recommend `fe-first` when most P0 endpoints are missing or the user wants to review the UI first). Examples: where does data live; which roles exist; is X workflow really needed; multi-language admin; payment reconciliation owner.
 
 ### 10. Write the docs, then hand off
 Fill the three templates. Run `node <skills-dir>/admin-qa-gate/scripts/validate-admin-docs.mjs --root <project> --stage discovery` (`<skills-dir>` = the folder that contains the `admin-*` skill directories). Then invoke `admin-information-architecture`. Gate 1 is presented after IA unless the user asks to review discovery separately.

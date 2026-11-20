@@ -71,6 +71,22 @@ Sau khi code xong website chính, mở Claude Code trong project và gọi:
 | **2. UI/UX & Design System** | Tokens, app shell, component dùng chung, dựng **1 module mẫu hoàn chỉnh** với data thật | **Gate 2**: duyệt look & feel, pattern tương tác |
 | **3. Implement & QA** | Build từng module (spec → API → UI → quyền → audit), kiểm thử sau mỗi module, báo cáo cuối | **Gate 3**: qa-report + danh sách việc còn lại |
 
+### Chế độ FE-first (xem giao diện trước, duyệt xong mới làm backend)
+
+Ở Gate 1 bạn chọn **delivery mode**:
+
+| Mode | Khi nào | Luồng |
+|---|---|---|
+| `full-stack` | Repo đã có API/DB cho admin, hoặc backend nhỏ | Build từng module với API thật |
+| `fe-first` | Muốn **xem và duyệt UI trước**, hoặc backend P0 còn thiếu nhiều | Viết **API contract** → build toàn bộ UI trên **mock layer có kiểm soát** → **Gate 2b (FE Preview)** bạn click thử và góp ý → đóng băng contract → build backend theo contract → đổi mock → API từng module → QA |
+
+Cách mock layer an toàn (chi tiết: `skills/admin-module-builder/references/fe-first-mock-layer.md`):
+- UI chỉ gọi **service interface**; mock và API thật cùng cài interface đó → đổi nguồn dữ liệu chỉ là 1 dòng, không phải làm lại UI.
+- Mock **giả lập như server thật**: phân trang/lọc/sắp xếp server-side, độ trễ, lỗi 422/403/409, state machine.
+- Luôn có banner **"Prototype data"**, role switcher (xem admin dưới góc nhìn từng role), nút bật các trạng thái empty/error/slow/forbidden.
+- **Chặn production** bằng biến môi trường triển khai (không dùng `NODE_ENV`, vì preview trên Vercel cũng là `production`) + check bundle; preview phải có bảo vệ truy cập và `noindex`.
+- Module chạy trên mock có trạng thái `prototype`, **không bao giờ được tính là `done`**; validator sẽ báo lỗi nếu `done` mà vẫn dùng mock, hoặc có module `prototype` mà thiếu `api-contract.md`.
+
 Một số câu nói tự nhiên cũng kích hoạt đúng skill:
 - "Phân tích web này rồi liệt kê module admin cần có" → `admin-discovery`
 - "Thiết kế lại menu và phân quyền cho admin" → `admin-information-architecture`
@@ -91,6 +107,7 @@ docs/admin/
   product-discovery.md   business-domain-map.md   module-inventory.md
   information-architecture.md   permission-matrix.md   design-system.md
   module-specifications/<module-id>.md
+  api-contract.md            (bắt buộc ở chế độ fe-first)
   implementation-status.md   qa-report.md
 ```
 `module-inventory.md` là **nguồn sự thật duy nhất** về trạng thái module; `implementation-status.md` ghi bằng chứng verify.

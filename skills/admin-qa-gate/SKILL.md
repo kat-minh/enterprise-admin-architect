@@ -34,6 +34,9 @@ For each module under test, follow `references/e2e-test-playbook.md`:
 - **Security spot-check**: `references/quality-gates.md` §D (IDOR, mass assignment, upload/export safety, secrets, headers).
 - **Scale**: list endpoints with a large seeded dataset stay fast and paginated (no full-table loads).
 
+### 3b. FE-first prototype review (only when delivery mode = `fe-first`)
+Modules on the mock adapter (`prototype`) get a **UI-only** pass: `references/quality-gates.md` §P (prototype checks) + sections B, E, G. Check the mock behaves like a server (server-like pagination, 422/403/409, latency), the "Prototype data" banner is present, the environment guard blocks `production`, and the mock is absent from the production bundle. Evidence is `Verified = partial` at best - never `yes`, never `done`. Permission tests against the real API (§D, §3 above) run only after the backend is connected.
+
 ### 4. Regression on the public site
 Smoke the public routes and run existing public tests. The admin must not break public pages, auth, API contracts or the design system.
 

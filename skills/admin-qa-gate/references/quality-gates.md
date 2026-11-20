@@ -12,6 +12,7 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - F. Performance
 - G. Accessibility
 - H. Documentation
+- P. FE-first prototype checks
 - Per-module quick checklist
 
 ---
@@ -53,7 +54,7 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 
 ## C. Functionality
 
-- [ ] FN-1 Real API/database integration; no mock data or fake success in production paths.
+- [ ] FN-1 Real API/database integration; no mock data or fake success in production paths. (`fe-first` prototypes: mock only inside the guarded adapter - see §P.)
 - [ ] FN-2 Create/read/update/archive/restore behave correctly (where applicable); data persists after refresh.
 - [ ] FN-3 State transitions follow the lifecycle; invalid transitions rejected server-side (409/422).
 - [ ] FN-4 Validation enforced on server; errors surface on the right fields.
@@ -116,6 +117,20 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] DOC-2 `permission-matrix.md` equals the permission constants/seed in code.
 - [ ] DOC-3 Backend gaps and limitations are listed honestly.
 - [ ] DOC-4 Run/seed/login instructions per role exist.
+
+## P. FE-first prototype checks (only for `prototype` modules)
+
+A prototype passes its review when the UI is right and the contract is trustworthy. It is **not** a pass for functionality or security.
+
+- [ ] PROTO-1 UI reaches the data only through the service interface; no component imports fixtures or branches on mock except the prototype toolbar/banner.
+- [ ] PROTO-2 Mock emulates server semantics: server-side pagination/sort/filter/search, latency, `422` with field errors, `403` per active role, `409` for invalid transitions/stale versions, same `ApiError` shape.
+- [ ] PROTO-3 Fixtures are synthetic, derived from the real schema, cover every lifecycle state, edge cases, an empty set and a large set (≥ 2k rows).
+- [ ] PROTO-4 "Prototype data" banner visible on every admin page; role switcher and scenario toggles (empty/error/slow/forbidden/conflict) work.
+- [ ] PROTO-5 `api-contract.md` lists every endpoint the UI calls, matches the zod schemas, and is versioned (v0 draft → v1 frozen at Gate 2b).
+- [ ] PROTO-6 Environment guard throws when `source=mock` in `production`; CI/build check proves the mock marker is absent from the production bundle; preview deployments are access-protected and `noindex`.
+- [ ] PROTO-7 Inventory status is `prototype`; implementation-status Data source = `mock`; Verified ≠ `yes`; every handoff says "UI prototype, backend pending".
+- [ ] PROTO-8 No real customer data or secrets in fixtures or the preview environment.
+- [ ] PROTO-9 (after backend) Swap checklist done: contract tests pass against real responses, Data source = `api`, mock affordances removed from production paths, then §A-H apply in full.
 
 ## Per-module quick checklist
 

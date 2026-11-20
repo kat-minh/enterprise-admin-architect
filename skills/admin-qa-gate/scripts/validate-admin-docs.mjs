@@ -113,7 +113,7 @@ const checkPlaceholders = (file, md) => { if (md && PLACEHOLDER_RE.test(md)) war
 const LAYERS = ['core', 'foundation', 'domain'];
 const EVIDENCE = ['confirmed', 'implied', 'proposed'];
 const PRIORITY = ['P0', 'P1', 'P2'];
-const STATUS = ['proposed', 'planned', 'in-progress', 'done', 'blocked', 'dropped', 'exists'];
+const STATUS = ['proposed', 'planned', 'in-progress', 'prototype', 'done', 'blocked', 'dropped', 'exists'];
 const CORE_IDS = ['auth', 'rbac', 'dashboard', 'admin-users', 'audit-log', 'settings', 'my-account'];
 const NO_PERMISSION_OK = new Set(['auth', 'my-account']); // self-service / public entry modules
 const CELL_OK = /^(yes|no|own|team|y|n|x|✔|✓|✘|✗|-|—|–)$/i;
@@ -271,6 +271,18 @@ if (at('design')) {
     if (!hasHeading(ds, /tokens/i)) warn('design-system.md', 'No "Tokens" section.');
     if (!hasHeading(ds, /component/i)) warn('design-system.md', 'No component catalogue section.');
   }
+  // fe-first mode: prototype modules are built against api-contract.md (contract-first)
+  const prototypes = [...modules.values()].filter((m) => m.status === 'prototype');
+  if (prototypes.length) {
+    const contract = readDoc('api-contract.md');
+    if (contract === null) err('api-contract.md', `${prototypes.length} module(s) are "prototype" (${prototypes.map((m) => m.id).join(', ')}) but api-contract.md is missing - FE-first is contract-first.`);
+    else {
+      for (const m of prototypes) {
+        if (!new RegExp(`\\b${m.id}\\b`).test(contract)) warn('api-contract.md', `Prototype module "${m.id}" is not mentioned in the contract.`);
+      }
+      ok('api-contract.md', `present (${prototypes.length} prototype module(s))`);
+    }
+  }
 }
 
 // ---------------------------------------------------------------- build: specs + implementation status
@@ -279,7 +291,7 @@ if (at('build') && modules.size) {
   for (const m of modules.values()) {
     const specPath = path.join(specDir, `${m.id}.md`);
     const exists = fs.existsSync(specPath);
-    const needsSpec = ['in-progress', 'done'].includes(m.status);
+    const needsSpec = ['in-progress', 'prototype', 'done'].includes(m.status);
     if (!exists) {
       if (needsSpec) err(`module-specifications/${m.id}.md`, `Module "${m.id}" is ${m.status} but has no module specification.`);
       else if (['planned', 'blocked'].includes(m.status) && ['P0', 'P1'].includes(m.priority)) warn(`module-specifications/${m.id}.md`, `${m.priority} module "${m.id}" (${m.status}) has no specification yet.`);
@@ -305,6 +317,17 @@ if (at('build') && modules.size) {
       const mIx = colIndex(t, 'moduleid'), vIx = colIndex(t, 'verified'), eIx = colIndex(t, 'evidence');
       const rows = new Map(t.rows.map((r) => [clean(r.cells[mIx]), { v: clean(r.cells[vIx]).toLowerCase(), e: r.cells[eIx], line: r.line }]));
       for (const id of rows.keys()) if (!modules.has(id)) warn('implementation-status.md', `Row "${id}" is not a module in module-inventory.md.`);
+      // a module cannot be done (or exist as real) while its data source is still the mock adapter
+      const backend = findTable(impl, ['moduleid', 'datasource']);
+      if (backend) {
+        const bm = colIndex(backend, 'moduleid'), bd = colIndex(backend, 'datasource');
+        for (const r of backend.rows) {
+          const id = clean(r.cells[bm]);
+          const src = clean(r.cells[bd]).toLowerCase();
+          if (!['api', 'mock', '-', ''].includes(src)) warn(`implementation-status.md:${r.line}`, `${id}: Data source "${src}" should be "api" or "mock".`);
+          if (src === 'mock' && modules.get(id)?.status === 'done') err(`implementation-status.md:${r.line}`, `Module "${id}" is done but its Data source is still "mock" - connect the real backend first.`);
+        }
+      }
       for (const m of modules.values()) {
         if (m.status !== 'done') continue;
         const row = rows.get(m.id);
@@ -321,8 +344,9 @@ if (at('build') && modules.size) {
 // ---------------------------------------------------------------- final
 if (at('final') && modules.size) {
   for (const m of modules.values()) {
-    if (['planned', 'in-progress', 'proposed'].includes(m.status)) {
-      (m.priority === 'P0' ? err : warn)('module-inventory.md', `${m.priority} module "${m.id}" is still "${m.status}" at final stage.`);
+    if (['planned', 'in-progress', 'proposed', 'prototype'].includes(m.status)) {
+      const note = m.status === 'prototype' ? ' (UI prototype on mock data - backend not connected)' : '';
+      (m.priority === 'P0' ? err : warn)('module-inventory.md', `${m.priority} module "${m.id}" is still "${m.status}" at final stage${note}.`);
     }
   }
   const qa = readDoc('qa-report.md');

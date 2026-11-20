@@ -50,6 +50,7 @@
 |---|---|---|---|
 
 ## 9. Assumptions
+- **Delivery mode:** full-stack | fe-first (UI approved on mock layer before backend) - decided at Gate 1 on <YYYY-MM-DD>
 - <explicit assumptions made while information was missing>
 
 ## 10. Open questions
