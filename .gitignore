@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+# scanner output generated inside a target project, not this repo
+.scan.json

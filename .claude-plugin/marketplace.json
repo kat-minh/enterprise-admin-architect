@@ -1,0 +1,17 @@
+{
+  "name": "enterprise-admin-architect",
+  "owner": {
+    "name": "kat-minh"
+  },
+  "metadata": {
+    "description": "Skill suite for Claude Code that analyses an existing website and builds its enterprise-grade admin system (back office / CMS) end-to-end."
+  },
+  "plugins": [
+    {
+      "name": "enterprise-admin-architect",
+      "source": "./",
+      "description": "Skill suite to analyse an existing website and build its enterprise-grade admin system end-to-end (discovery → IA/RBAC → design system → modules → QA).",
+      "version": "1.0.0"
+    }
+  ]
+}

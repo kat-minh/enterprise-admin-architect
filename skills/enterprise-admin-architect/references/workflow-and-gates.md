@@ -1,0 +1,78 @@
+# Workflow & Gates
+
+Read when: starting a project, preparing a gate, or the user wants to compress/skip steps.
+
+## Contents
+- Session 1 - Discovery & Architecture → Gate 1
+- Session 2 - UI/UX & Design System → Gate 2
+- Session 3 - Implement & QA → Gate 3
+- Scaling the process
+- Fast path ("just build it")
+- Status vocabulary
+- Resume protocol
+
+---
+
+## Session 1 - Discovery & Architecture → Gate 1
+
+Skills: `admin-discovery`, then `admin-information-architecture`.
+
+**Present at Gate 1** (one screen of text, then the files):
+1. Product in 5 lines + detected stack (and what will be reused).
+2. Domain map (3-8 domains) and the key entity relationships.
+3. Module inventory table: `core` / `foundation` / `domain`, evidence tag, priority P0/P1/P2. Call out **what was deliberately excluded and why**.
+4. Admin personas/roles and the permission matrix headline.
+5. Sidebar tree (≤ 9 top-level groups).
+6. Backend gap list (endpoints/tables missing for P0/P1 modules) and who builds them.
+7. Open questions - max 7, each with a recommended default.
+
+**Approval unlocks:** Session 2. If the user changes scope, update `module-inventory.md` first, then re-derive IA/permissions.
+
+## Session 2 - UI/UX & Design System → Gate 2
+
+Skill: `admin-design-system`.
+
+Produce tokens, app shell (sidebar/header/breadcrumb/command menu), shared components (DataTable, FilterBar, Form patterns, Drawer, ConfirmDialog, StatusBadge, EmptyState, PermissionGate, Timeline), then build **one reference module end-to-end as a vertical slice** (list → preview drawer → detail → form) using real data. This slice is the template every other module copies.
+
+**Present at Gate 2:** screenshots (use browser automation if available) of dashboard, list, detail, form; the token table; deviations from the existing design system and why.
+
+**Approval unlocks:** bulk module work. If the project already has a good design system, Gate 2 is mostly "confirm we reuse it" and can be merged into Gate 1.
+
+## Session 3 - Implement & QA → Gate 3
+
+Skills: `admin-module-builder` (loop per module) and `admin-qa-gate`.
+
+Order: foundation (shell/auth guard/permission infra/audit service) → `core` modules → domain modules by priority (core business entity first, then operational workflow, then supporting entities, then analytics) → `foundation` modules → integration polish.
+
+After **each module**: run `admin-qa-gate` module checks, update `implementation-status.md`. Do not batch QA to the end.
+
+**Present at Gate 3:** the final report (see SKILL.md) + `qa-report.md`.
+
+## Scaling the process
+
+| Site size | Adjustment |
+|---|---|
+| Landing/brochure + contact form (≤ 5 entities) | Merge Gates 1 and 2. Modules: auth, roles (2), dashboard (leads), leads inbox, content/settings, audit. Skip multi-level IA. |
+| Typical business site (6-20 entities) | Full pipeline as written. |
+| Large platform (20+ entities, multi-role, workflows) | Split Session 3 into waves (per domain), one gate per wave; write module specs in parallel with subagents; keep one reference module authoritative. |
+
+## Fast path ("just build it")
+
+- Run `admin-discovery/scripts/scan-project.mjs`, read key files, write a compact `product-discovery.md` + `module-inventory.md` (assumptions explicit).
+- Ask only blocking questions (backend location, roles, any `proposed` module with major cost).
+- Continue into build, still honouring: server-side authz, audit logging, real data, verification.
+- Put every assumption in the docs under "Assumptions" so the user can correct them later.
+
+## Status vocabulary (use exactly)
+
+- Module `Status`: `proposed` → `planned` → `in-progress` → `done` | `blocked` | `dropped` | `exists` (pre-existing admin module kept as is).
+- `Evidence`: `confirmed` | `implied` | `proposed`.
+- `Priority`: `P0` (admin cannot operate without it), `P1` (needed within first weeks of operation), `P2` (nice-to-have/scale).
+- Verified (implementation-status): `yes` only with evidence (command output, test name, screenshot, manual walkthrough note); otherwise `no`/`partial`.
+
+## Resume protocol
+
+1. Read `docs/admin/implementation-status.md` (fallback: `module-inventory.md`).
+2. Print: current session, completed modules, next module, blockers.
+3. Re-run `node <skills-dir>/admin-qa-gate/scripts/validate-admin-docs.mjs --root <project> --stage <current>` to detect doc drift before continuing.
+4. Continue; do not redo approved work unless the user asks.

@@ -1,0 +1,10 @@
+{
+  "name": "enterprise-admin-architect",
+  "version": "1.0.0",
+  "description": "End-to-end skill suite for building professional, enterprise-grade admin systems (back office / CMS) for an existing website: discovery, information architecture & RBAC, design system, module builder, QA gate.",
+  "author": {
+    "name": "kat-minh"
+  },
+  "license": "MIT",
+  "keywords": ["admin", "back-office", "cms", "dashboard", "rbac", "design-system", "nextjs", "enterprise"]
+}
