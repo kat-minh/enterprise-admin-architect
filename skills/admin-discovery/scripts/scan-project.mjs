@@ -315,7 +315,8 @@ for (const f of FILES) {
   }
   // Next.js pages router / Nuxt pages
   m = f.match(/(?:^|\/)pages\/(.+)\.(tsx|jsx|vue|mdx)$/);
-  if (m && !/\/_/.test('/' + m[1]) && !m[1].startsWith('api/')) {
+  // Only when the framework that gives `pages/` its meaning is present (a Vite/React-Router app also has src/pages/*.tsx)
+  if (m && !/\/_/.test('/' + m[1]) && !m[1].startsWith('api/') && (m[2] === 'vue' ? deps.nuxt : deps.next || deps.gatsby)) {
     const route = '/' + m[1].replace(/\/?index$/, '');
     pageRoutes.push({ route: route === '' ? '/' : route, file: f, router: m[2] === 'vue' ? 'nuxt-pages' : 'pages', groups: [] });
     continue;
@@ -377,6 +378,57 @@ for (const f of FILES) {
     serverActions.push({ file: f, actions: cap(names, 30) });
   }
   // Inline server actions inside components are not scanned (documented limitation).
+}
+
+// Express/Fastify-style mount prefixes: app.use('/api/x', xRoutes) gives the routes declared in xRoutes' file their full path.
+const FILESET = new Set(FILES);
+const joinUrl = (a, b) => ('/' + [a, b].join('/')).replace(/\/+/g, '/').replace(/(.)\/$/, '$1');
+function resolveModule(fromFile, spec) {
+  let base = null;
+  if (spec.startsWith('.')) base = path.posix.join(path.posix.dirname(fromFile), spec);
+  else if (spec.startsWith('@/') || spec.startsWith('~/')) {
+    const i = fromFile.indexOf('src/');
+    base = (i >= 0 ? fromFile.slice(0, i) : '') + 'src/' + spec.slice(2);
+  }
+  if (!base) return null;
+  const clean = path.posix.normalize(base).replace(/\.(?:m?[jt]sx?)$/, '');
+  for (const c of [`${clean}.ts`, `${clean}.js`, `${clean}.mjs`, `${clean}.tsx`, `${clean}/index.ts`, `${clean}/index.js`]) if (FILESET.has(c)) return c;
+  return null;
+}
+const mounts = new Map(); // child file -> [{ parent, prefix }]
+const reUse = /\b(?:app|server|router|api|[A-Za-z]+Router)\.use\(\s*(['"`])([^'"`]+)\1\s*,\s*(?:[\w$.]+(?:\([^)]*\))?\s*,\s*)*([A-Za-z_$][\w$]*)\s*\)/g;
+for (const f of FILES) {
+  if (!/\.(m?[jt]s|tsx|jsx)$/.test(f) || isTestFile(f)) continue;
+  const src = read(f, 200_000);
+  if (!src.includes('.use(')) continue;
+  const idents = new Map();
+  for (const m of src.matchAll(/import\s+([A-Za-z_$][\w$]*)\s*(?:,\s*\{[^}]*\})?\s*from\s*['"]([^'"]+)['"]/g)) idents.set(m[1], m[2]);
+  for (const m of src.matchAll(/import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g)) {
+    for (const part of m[1].split(',')) { const [orig, alias] = part.trim().split(/\s+as\s+/); if (orig) idents.set((alias || orig).trim(), m[2]); }
+  }
+  for (const m of src.matchAll(/(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*require\(\s*['"]([^'"]+)['"]\s*\)/g)) idents.set(m[1], m[2]);
+  for (const m of src.matchAll(reUse)) {
+    const spec = idents.get(m[3]);
+    const child = spec && resolveModule(f, spec);
+    if (child) { if (!mounts.has(child)) mounts.set(child, []); mounts.get(child).push({ parent: f, prefix: m[2] }); }
+  }
+}
+function prefixesFor(file, depth = 0) {
+  const ms = mounts.get(file);
+  if (!ms || depth > 3) return null;
+  const out = [];
+  for (const { parent, prefix } of ms) for (const p of prefixesFor(parent, depth + 1) || ['']) out.push(joinUrl(p, prefix));
+  return uniq(out);
+}
+if (mounts.size) {
+  const resolved = [];
+  for (const r of apiRoutes) {
+    const ps = r.kind === 'express-like' ? prefixesFor(r.file) : null;
+    if (ps && ps.length) for (const p of ps) resolved.push({ ...r, path: joinUrl(p, r.path), mounted: true });
+    else resolved.push(r);
+  }
+  apiRoutes.length = 0;
+  apiRoutes.push(...resolved);
 }
 
 // React Router style config routes (best effort)
@@ -616,7 +668,8 @@ for (const f of FILES) {
 }
 for (const e of enums) if (/role/i.test(e.name)) for (const v of e.values) roleValues.set(v, (roleValues.get(v) || 0) + 1);
 
-const authFiles = FILES.filter((f) => /(^|\/)(auth|session|lib\/auth|utils\/auth)\.(ts|js|tsx)$|\[\.\.\.nextauth\]|auth\.config\.|(^|\/)(middleware|proxy)\.(ts|js)$/i.test(f)).filter((f) => !/node_modules/.test(f));
+const AUTH_NAME_RE = /(^|\/)(auth|authentication|session|sessions)\.(ts|js|tsx)$|(^|\/)(auth|authentication|session)\/[^/]+\.(ts|js|tsx)$|(^|\/)(auth|session)[.-][\w.-]*\.(ts|js|tsx)$|\[\.\.\.nextauth\]|auth\.config\.|(^|\/)(middleware|proxy)\.(ts|js)$/i;
+const authFiles = FILES.filter((f) => AUTH_NAME_RE.test(f) && !isTestFile(f) && !/\.(swagger|dto)\./.test(f));
 const middlewareFiles = FILES.filter((f) => /(^|\/)(middleware|proxy)\.(ts|js)$/.test(f));
 const roleModels = uniq(modelsDedup.filter((m) => m.flags.role).map((m) => m.name));
 const loginPages = pageRoutes.filter((r) => /\/(login|signin|sign-in|register|signup|sign-up)(\/|$)/i.test(r.route)).map((r) => r.route);
@@ -760,7 +813,7 @@ function toMarkdown(r) {
   L.push(`- login pages: ${r.auth.loginPages.join(', ') || '-'}`);
   L.push(`- models with role-like fields: ${r.auth.modelsWithRoleFields.join(', ') || '-'}`);
   L.push(`- role values seen in code: ${r.auth.roleValuesSeenInCode.map((x) => `${x.role}(${x.count})`).join(', ') || '-'}`);
-  L.push('', `## Public forms (${r.publicForms.length}) - candidates for a leads/submissions inbox`);
+  L.push('', `## Forms (${r.publicForms.length}) - decide which are public submission forms (leads inbox candidates) and which are in-app`);
   for (const f of r.publicForms.slice(0, 20)) L.push(`- ${f.file}${f.endpoints.length ? ' -> ' + f.endpoints.join(', ') : ''}`);
   L.push('', '## Shared UI');
   L.push(`- components/ui: ${r.sharedUI.uiComponents.join(', ') || '-'}`);

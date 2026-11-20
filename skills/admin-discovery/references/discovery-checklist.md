@@ -17,7 +17,7 @@ Read when: step 2 of `admin-discovery`, or when the scanner misses something.
 |---|---|---|
 | Stack & conventions | `package.json`, `tsconfig`, lint config, `components.json`, tailwind/theme config, monorepo config | Framework version, strictness, path aliases, naming, UI kit, tokens |
 | Routing | `app/`, `pages/`, router files, `middleware.ts`/`proxy.ts` | Public routes, protected routes, route groups, layouts, existing `/admin` |
-| Auth | auth config/lib, session helpers, login pages, middleware | Provider, session type (cookie/JWT), user model, roles/claims, how server checks identity |
+| Auth | auth config/lib, session helpers, login pages, middleware | Provider, session type (cookie/JWT), user model, roles/claims, how server checks identity, **can a session be revoked** (session table / token version) or does a token live until expiry |
 | Authorization | `role`, `isAdmin`, `permissions` fields; guard helpers | Is there any RBAC? Where is it enforced? |
 | Data model | Prisma/Drizzle/TypeORM/Mongoose/SQL migrations/Django models | Entities, relations, enums/status fields, soft-delete columns, audit columns, indexes, unique constraints |
 | API | `app/api/**`, `pages/api/**`, controllers, tRPC routers, server actions | CRUD coverage, list params (page/limit/sort/filter), validation lib, error format, authz per endpoint |
@@ -70,3 +70,8 @@ If it can run (`npm run dev`) and browser tools exist: visit each primary nav it
 - Uploaded files with no listing or cleanup.
 - Cron/jobs/webhooks with no visibility.
 - Users who can be abusive (UGC) with no moderation or ban flow.
+- Roles exist only **per resource** (trip/workspace/organisation membership) and the `users` table has no platform role or status: there is no admin concept at all, so a separate admin identity is needed and "suspend a user" has no field to rely on.
+- Stateless tokens with a long lifetime and no revocation: suspending or force-signing-out a user cannot take effect until the token expires.
+- Rate limits and lockouts kept in process memory: they reset on restart and split across instances, so they are not operator-visible and not enough for admin login.
+- A frontend that is a PWA with a service worker: do not ship the admin inside it.
+- An expensive or fragile background capability (headless-browser scraping, third-party quotas) with no recorded metrics: needs an operations module and an events table.

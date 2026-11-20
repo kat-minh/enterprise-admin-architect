@@ -114,6 +114,48 @@ test('Express, NestJS and Laravel endpoints', () => {
   }
 });
 
+test('Express mount prefixes are applied to router files (incl. a router mounted twice)', () => {
+  const dir = makeProject({
+    'package.json': JSON.stringify({ dependencies: { express: '4.0.0' } }),
+    'src/app.ts': `import express from 'express';\nimport itemRoutes from './modules/items/item.routes';\nimport { authRouter as auth } from './modules/auth/auth.routes';\nconst app = express();\napp.use('/api/auth', auth);\napp.use('/api/shops/:shopId/items', itemRoutes);\napp.use('/api/items', requireAuth, itemRoutes);\napp.get('/health', () => {});\n`,
+    'src/modules/items/item.routes.ts': `import { Router } from 'express';\nconst router = Router();\nrouter.get('/', () => {});\nrouter.put('/:itemId', () => {});\nexport default router;\n`,
+    'src/modules/auth/auth.routes.ts': `import { Router } from '@/lib/router';\nexport const authRouter = Router();\nauthRouter.post('/login', () => {});\n`,
+  });
+  const api = scan(dir).routes.api.map((a) => `${a.method} ${a.path}`).sort();
+  for (const expected of ['GET /health', 'GET /api/items', 'GET /api/shops/:shopId/items', 'PUT /api/items/:itemId', 'PUT /api/shops/:shopId/items/:itemId']) {
+    assert.ok(api.includes(expected), `missing ${expected}; got ${api}`);
+  }
+  assert.ok(!api.includes('GET /') && !api.includes('PUT /:itemId'), `unmounted paths leaked: ${api}`);
+});
+
+test('src/pages is not treated as a Next.js pages router in a Vite / React Router app', () => {
+  const vite = scan(makeProject({
+    'package.json': JSON.stringify({ dependencies: { react: '19.0.0', 'react-router-dom': '7.0.0', vite: '6.0.0' } }),
+    'src/App.tsx': `import { Routes, Route } from 'react-router-dom';\nexport default () => <Routes><Route path="/trip/:id" element={null} /></Routes>`,
+    'src/pages/Login.tsx': 'export const Login = () => null',
+    'src/pages/Trips.tsx': 'export const Trips = () => null',
+  }));
+  assert.deepEqual(vite.routes.pages.map((p) => p.route), ['/trip/:id']);
+  const next = scan(makeProject({
+    'package.json': JSON.stringify({ dependencies: { next: '14.0.0' } }),
+    'pages/about.tsx': 'export default () => null',
+  }));
+  assert.deepEqual(next.routes.pages.map((p) => p.route), ['/about']);
+});
+
+test('auth-related files under modules/ and middlewares/ are found', () => {
+  const dir = makeProject({
+    'src/modules/auth/auth.routes.ts': 'x',
+    'src/modules/auth/auth.service.ts': 'x',
+    'src/modules/auth/auth.swagger.ts': 'x',
+    'src/middlewares/auth.middleware.ts': 'x',
+    'src/modules/blog/author.ts': 'x',
+  });
+  const files = scan(dir).auth.files;
+  assert.ok(files.includes('src/modules/auth/auth.routes.ts') && files.includes('src/middlewares/auth.middleware.ts'));
+  assert.ok(!files.some((f) => f.includes('swagger') || f.includes('author')), `unexpected: ${files}`);
+});
+
 test('Remix file routes are detected only when the dependency is present', () => {
   const files = {
     'app/routes/_index.tsx': 'x',

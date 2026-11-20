@@ -52,6 +52,8 @@ Guideline: if two actions would plausibly be granted to different people, they a
 - Domain roles: capability bundles aligned to jobs (Content Editor, Support Agent, Finance, Operations/Fulfilment, Moderator, Analyst - read-only).
 - **Viewer/Analyst**: read-only; `export` only if justified.
 - Custom roles: only if the business needs it (editable role builder = P1+). Otherwise ship fixed roles defined in code/seed and keep the matrix document as the source.
+- **Per-resource roles are not platform roles.** Roles such as owner/editor/viewer on a workspace, trip or organisation describe a user's relation to one record; operators need separate, platform-level admin identities and roles (never reuse the end-user table for them).
+- Single-operator products still define at least Super Admin plus one restricted role (support / read-only) so sensitive powers can be delegated later without redesign.
 - Avoid role explosion (> 8 usually signals missing permission granularity or per-person exceptions).
 
 ## Default role templates by domain

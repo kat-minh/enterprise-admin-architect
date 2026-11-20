@@ -21,6 +21,7 @@ Read when: foundation step, each module's step F, and before Gate 3. An admin pa
 - **Brute-force protection**: rate-limit and progressively delay login, reset and MFA attempts per account + IP; generic error messages; lockout/notification.
 - Sessions: `HttpOnly`, `Secure`, `SameSite=Lax` (or `Strict`), idle timeout (e.g. 30-60 min) and absolute lifetime; rotate ID on login/privilege change; revoke on logout/password change/deactivation; list and revoke active sessions in My Account.
 - Password reset: single-use, short-lived, hashed tokens; don't reveal whether an account exists.
+- **Suspension and deactivation must take effect on the next request.** Stateless long-lived tokens (JWT without a session store) cannot be revoked by themselves: add a session table, or a `token_version`/`status` check on every authenticated request, or short-lived tokens with refresh. Enforce it in the authentication layer, not only in the login endpoint.
 - Log all auth events (`audit-logging.md`).
 
 ## Authorization
@@ -68,6 +69,7 @@ Read when: foundation step, each module's step F, and before Gate 3. An admin pa
 | Data export | Permission, scope, masking, audit, signed expiring link |
 | Role/permission editing | `rbac.manage` only, MFA step-up, audit, invariants |
 | Integration keys/webhooks | Masked, rotate/revoke, test endpoint safely (SSRF controls) |
+| Viewing private user content (trips, messages, documents) | Separate `inspect` permission, mandatory reason, audit entry on every view, minimum fields, no bulk access; "public by link" content is still personal data |
 | Raw SQL/console tools | Do not build; if unavoidable, read-only replica + approval |
 
 ## Security acceptance checklist

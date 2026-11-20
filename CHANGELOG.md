@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.1 - 2026-11-20
+
+Fixes and guidance from a first run on a real two-repo project (Express + PostgreSQL backend, Vite PWA frontend, no existing admin).
+
+- Fix (scanner): Express/Fastify mount prefixes are now applied to router files (`app.use("/api/x", xRoutes)`), including routers mounted twice; `src/pages/*` is no longer treated as a Next.js pages router in Vite/React Router apps; `modules/auth/*`-style auth files are detected; the form list heading no longer implies every form is a public lead form.
+- Guidance: PWA frontends get a separate admin app; per-resource roles are not platform roles; suspension needs session revocation with stateless tokens; support access to private user content needs an `inspect` permission, reason and audit; single-operator products still define a restricted role.
+- Playbook: worked example for consumer collaborative planners.
+- Tests: 3 new scanner tests.
+
 ## 1.2.0 - 2026-11-20
 
 - **Works with any AI assistant**, not only Claude Code: tool-neutral wording across the skills; `scripts/bundle.mjs` builds a self-contained Markdown prompt per phase for chat-only assistants; `docs/using-with-other-ai-tools.md` and a root `AGENTS.md`.

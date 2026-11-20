@@ -63,6 +63,20 @@ Entities: Asset/Equipment (serialised), Rental/Reservation, Customer, Deposit, D
 Modules: `assets`, `availability-calendar`, `rentals` (reserve → pick-up → out → returned → inspected → closed), `deposits-payments`, `damage-claims`, `maintenance`, `customers`, `pricing-rules`.
 Critical logic: double-booking prevention, late fees, condition checklists at hand-over/return, asset unavailability during maintenance.
 
+## Worked example - Consumer collaborative planner (trips, shared lists, notes)
+
+Entities: User (several sign-in methods), Plan/Trip with an owner and invited members (per-record roles), Items, Expenses, a public-by-link view, third-party data enrichment (maps scraping or API).
+
+| ID | Module | Why |
+|---|---|---|
+| `public-users` | App Users | Find an account, see how it signs in, suspend, force sign-out |
+| `trips` (the plan entity) | Trips | Support lookup, members tab (fix sharing problems), archive/restore, `inspect` of private content with reason + audit |
+| `scraper-ops` (enrichment ops) | Enrichment Operations | The costly, fragile external dependency needs error rate, latency, quota and a kill switch |
+| `curated-content` | Curated Content (proposed) | Only if sample plans or hand-written place data are hard-coded and need regular updates |
+
+Critical logic: per-record roles (owner/editor/viewer) are **not** platform roles, so admins get a separate identity; suspension needs real session revocation; content access is audited because "public by link" is still personal data; add soft delete before offering a delete action; privacy export/erasure is deferred until anonymisation rules exist.
+Dashboard queues: error rate of the enrichment dependency · new accounts with unusual volume · accounts still on a legacy login method.
+
 ## Self-check
 - Is every module justified by an event or entity discovered in step 1-2?
 - Does every physical/off-system step have a manual status entry point?
