@@ -99,7 +99,16 @@ For each workflow archetype module:
 
 ## Large-dataset test
 
-Seed ≥ 10k (ideally 100k) rows for the main list entities. Check: first page and filtered/sorted queries stay fast (< ~500ms locally), query plans use indexes (`EXPLAIN`), payload sizes small, UI stays responsive, export is async. A list that fetches everything is a Blocker.
+Seed **≥ 100k rows in the largest entity** (and ≥ 1M in any event or log table) in the throw-away database. At 10k rows the problems below are invisible: a real run found four lists taking 1.5-8 s at 200k users / 400k trips that were instant on the 64-row seed. A list that fetches everything is a Blocker.
+
+Recipe:
+1. Load the rows with set-based SQL (`generate_series`), tagged by a prefix so one command removes them again (delete children before parents: a cascade from the parent can scan every referencing column once per deleted row). **Run `ANALYZE` after the load**: fresh tables have no statistics and the planner picks nested loops that never finish.
+2. Time through the API, as a real role, cold and the median of three warm calls: first page; **every sortable column in both directions** (aggregate columns such as "trips owned" or "members" are the usual offenders); a deep page (e.g. page 4,000 of 25); a search with and without a result; each filter; the dashboard and report endpoints; payload sizes.
+3. Budgets, locally: list endpoints ≤ ~500 ms (search ≤ ~1 s), dashboards and reports ≤ ~2 s. Check `EXPLAIN` for anything over budget.
+4. Fix, then re-measure on **the same data** and compare before/after in `qa-report.md`. After any query change also compare every sort field × direction × two page sizes against an independent SQL ordering, and assert no id repeats or goes missing across pages.
+5. Remove the rows and confirm the database is back to the seed.
+
+Typical findings: per-row counts (`LEFT JOIN LATERAL (SELECT count(*) …)`) evaluated for every row the database walks, so a deep page pays for all the skipped rows and "sort by count" pays for the whole table → page the keys first and attach counts to that page only (see `admin-module-builder/references/backend-contract.md`); search that is a sequential scan; a dashboard that issues one query per tile.
 
 ## Public-site regression
 
@@ -126,6 +135,10 @@ Learned from running the suite against a real app; each of these produced a fals
 - **Scope locators.** The same label can appear twice (toolbar "Clear filters" and the empty-state button). Strict locators fail loudly; scope them to the region instead of taking `.first()`.
 - **Never test against a database you did not name.** The seed must require an explicit `DATABASE_URL`, refuse any non-local host, and use its own port; developers often already run a local database on the default port.
 - **Check what the browser's locale does.** Native date inputs render in the browser's language (`mm/dd/yyyy` in an English headless browser); decide whether that is acceptable for the operators.
+- **A lazily loaded route keeps the old screen until its chunk arrives.** The URL has already changed, but the previous page's table and pager are still on screen; reading them gives another page's numbers. After a client-side navigation wait for the destination's heading (and then its loaded rows), not only the URL.
+- **Ground truth must use the product's own window and fold definitions.** "Last 24 hours" shown as 24 hourly buckets is not `now() - interval '24 hours'`: 116 vs 117 is a definition mismatch, not a rounding error. Write the definition in the module spec and compute the expectation with it. Likewise `lower(unaccent(x))` and `unaccent(lower(x))` differ in a C-locale database (typical of embedded or minimal images), where `lower('Đ')` is a no-op: fold with `unaccent` first.
+- **Refused attempts are in the audit log, and they are the newest rows.** A test looking for "the latest entry of action X" must skip `denied` rows (or it will read the refusal your permission probe just created).
+- **Earlier suites go stale when a later module changes a default.** A new dashboard moved the landing page and removed every "coming soon" label; the Session 2 suite failed for good reasons. Re-run all earlier suites after each build session and update their expectations deliberately, never by loosening an assertion.
 - **A delegated agent's report is a claim.** If part of the build was delegated, re-run the type check and every test suite yourself and read the diff of anything touching shared or public code before recording evidence.
 
 ## Recording evidence

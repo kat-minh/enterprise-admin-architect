@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0 - 2026-11-21
+
+Lessons from building the remaining modules of the same project (dashboard, trips with archive and content inspection, admin accounts, roles page, scraper operations) and running the full quality gate, including a large-dataset check.
+
+- QA gate: the large-dataset test is now a recipe (≥ 100k rows in the largest entity, ≥ 1M in event tables, `ANALYZE` after loading, every sortable column in both directions, deep page, before/after on the same data, ordering comparison after any query change, cleanup). It found four lists taking 1.5-8 s that were instant on the small seed. New gate `PERF-6`; `PERF-1` raised from 10k to 100k rows.
+- QA playbook: four more pitfalls (lazily loaded routes keep the old screen until the chunk arrives; ground truth must use the product's own window and `unaccent`/`lower` fold definitions; refused attempts are the newest audit rows; earlier suites go stale when a later module changes defaults).
+- Backend contract: page the keys first and attach per-row counts to the page only (pre-aggregated join when sorting by a count); fold `lower(unaccent(x))` rather than `unaccent(lower(x))`; index foreign keys used in cascades.
+- Security baseline: credentials an admin hands to someone else (generated server-side, returned once, dialog that cannot be dismissed until acknowledged, never in audit or logs); self-protection and the last-Super-Admin rule under concurrency.
+- Dashboard design: state the window ("24 hours" as 24 buckets vs rolling), round axis labels (maximum must be even when the axis shows 0 / half / max), work-queue card layout.
+
 ## 1.2.2 - 2026-11-21
 
 Lessons from building and verifying a full-stack admin (real backend, separate admin app, UI end-to-end run).

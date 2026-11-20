@@ -54,6 +54,9 @@ Role-specific: the landing view differs per role (Finance sees payments/refunds;
 - Colours from tokens; colour-blind-safe; label directly where possible; consistent colour per category across charts. Use the `dataviz` skill for charting specifics if installed.
 - Only show metrics the data actually supports. **No placeholder stats**; if a KPI can't be computed yet, omit it or show "Not available" with the reason.
 - Heavy aggregates: compute server-side (SQL/materialised/cached), never by fetching all rows to the browser.
+- **State the window.** "Last 24 hours" is either a rolling window or N whole buckets (the current hour plus the 23 before it); pick one, write it in the spec, and make the chart series add up to the tile totals. Day buckets follow the business time zone, not UTC.
+- **Axis labels are round numbers.** With three labels (0, half, max) the maximum must be even, so the half is whole too (a peak of 5 gives 0 / 3 / 6, never 0 / 3 / 5); otherwise round up to 1, 1.2, 1.6, 2, 3, 4, 5, 6, 8 × 10ⁿ. Every chart has a one-sentence text summary and a collapsible data table.
+- **A work queue shows the count and the way in together.** Title and one-line description on the left, the count and a "View" action grouped on the right; the action opens the list already filtered to exactly those rows.
 
 ## States
 

@@ -96,11 +96,12 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 
 ## F. Performance
 
-- [ ] PERF-1 List endpoints paginated server-side; tested with a large dataset (≥ 10k rows): first page < ~500ms p95 locally.
+- [ ] PERF-1 List endpoints paginated server-side; tested with a large dataset (≥ 100k rows in the largest entity, ≥ 1M in event tables; recipe in `e2e-test-playbook.md`): first page, every sortable column in both directions, a deep page and search each < ~500ms locally (search < ~1 s), dashboards/reports < ~2 s.
 - [ ] PERF-2 No N+1 queries on list/detail (check query logs).
 - [ ] PERF-3 Indexes exist for filtered/sorted columns.
 - [ ] PERF-4 Heavy exports/reports are async/cached.
 - [ ] PERF-5 UI responsive with 100-row pages; no layout shift; large lists virtualised if needed.
+- [ ] PERF-6 Per-row counts and aggregates on a list are computed for the returned page only (keys paged first); sorting by an aggregate uses a pre-aggregated join, not one lookup per row. Before/after timings are in the QA report.
 
 ## G. Accessibility
 

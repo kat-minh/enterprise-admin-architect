@@ -79,6 +79,8 @@ Status codes: `400` malformed/unknown params · `401` unauthenticated · `403` f
 
 - Enforce integrity in the DB: NOT NULL, FKs (with sensible `ON DELETE`), unique/partial-unique, CHECK (e.g. `stock >= 0`), enums or lookup tables for statuses.
 - Indexes for every filtered/sorted column and FK used in lists; composite indexes matching common filters; avoid `LIKE '%x%'` on large tables without trigram/FTS.
+- **Page the keys first.** A list row with per-row counts (`LEFT JOIN LATERAL (SELECT count(*) …)`, or a correlated sub-select in the select list) pays for those counts on every row the database walks, including every row skipped by `OFFSET`: a deep page and a "sort by count" read the whole table (measured: 5 s and 8 s at 400k rows). Select only the ids with the filter, sort, `LIMIT` and `OFFSET`, then join the counts to that page and repeat the `ORDER BY` (same tie-break) on the outer query. When the sort column is itself the count, join a pre-aggregated `GROUP BY` instead, under the same alias. Compare the new ordering against an independent query for every sort field and direction before shipping.
+- Diacritic-insensitive search: fold with `lower(unaccent(x))`, never `unaccent(lower(x))`; databases in the C locale do not lower-case non-ASCII capitals (`Đ`), so the second order silently misses them. Index every foreign key that is used in a cascade or list (an unindexed `invited_by` made deleting users scan the whole membership table once per user).
 - Money as integer minor units (+ currency); timestamps in UTC (`timestamptz`); IDs opaque (UUID/cuid), not sequential if exposed.
 - Reversible migrations; backfills in batches; never destructive migration without backup plan.
 
