@@ -34,7 +34,7 @@ The public website serves its users. **The admin system operates the business be
 | 3. Implement & QA | `admin-module-builder` (per module) → `admin-qa-gate` | `module-specifications/*.md`, code, `implementation-status.md`, `qa-report.md` | **Gate 3** - approve QA report / final handoff |
 | *3a/3b in `fe-first`* | 3a FE on mock → **Gate 2b FE Preview** → 3b backend + swap | `api-contract.md` (frozen v1 at Gate 2b) | **Gate 2b**, then Gate 3 |
 
-Invoke phase skills with the Skill tool (installed as a plugin, their names are namespaced, e.g. `enterprise-admin-architect:admin-discovery`). If unavailable, read the sibling `../<skill-name>/SKILL.md` directly.
+Invoke phase skills with your tool's skill mechanism (in Claude Code, plugin skills are namespaced, e.g. `enterprise-admin-architect:admin-discovery`). If there is none, open the sibling `../<skill-name>/SKILL.md` and follow it as written.
 
 ## Delivery modes
 
@@ -60,7 +60,7 @@ Details of each gate, scaling for small sites and the "just build it" fast path:
 
 ## Gate protocol
 
-At each gate: present a **short** summary (what was produced, key decisions, assumptions, open questions with a recommended default for each), then ask for approval using the question tool when available. Ask ≤ 7 targeted questions, never open-ended "what do you want?". Record answers in the docs.
+At each gate: present a **short** summary (what was produced, key decisions, assumptions, open questions with a recommended default for each), then ask for approval with your tool's question/choice UI if it has one, otherwise as a short numbered list. Ask ≤ 7 targeted questions, never open-ended "what do you want?". Record answers in the docs.
 
 If the user says "just build it / làm luôn": still do discovery (compact), write assumptions into the docs, ask only the blocking questions, and continue. **Never skip** permission enforcement, audit logging, or the verification step.
 

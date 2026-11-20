@@ -1,6 +1,6 @@
 # Product Discovery
 
-> Project: <name> · Date: <YYYY-MM-DD> · Phase: Discovery · Author: Claude
+> Project: <name> · Date: <YYYY-MM-DD> · Phase: Discovery · Author: <agent or person>
 > Evidence rule: every claim cites a file, route, table or observed behaviour.
 
 ## 1. Product overview

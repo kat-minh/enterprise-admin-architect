@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 - 2026-11-20
+
+- **Works with any AI assistant**, not only Claude Code: tool-neutral wording across the skills; `scripts/bundle.mjs` builds a self-contained Markdown prompt per phase for chat-only assistants; `docs/using-with-other-ai-tools.md` and a root `AGENTS.md`.
+- **Quality tooling**: automated tests (`node --test`) for the scanner, the docs validator and the bundler; `scripts/check-repo.mjs` (frontmatter, references, manifests, public-data hygiene); GitHub Actions CI.
+- **Project docs**: `CONTRIBUTING.md`, `SECURITY.md`; READMEs restructured for public release.
+
 ## 1.1.1 - 2026-11-20
 
 - Docs: bilingual README (`README.md` English, `README.vi.md` Vietnamese) with a status/known-limitations section.
@@ -11,7 +17,7 @@
 ## 1.1.0 - 2026-11-20
 
 - **FE-first delivery mode**: build and approve the admin UI on a typed mock data layer before any backend, then build the backend to a frozen API contract.
-  - New: `admin-module-builder/references/fe-first-mock-layer.md`, `templates/api-contract.md`, **Gate 2b (FE Preview)**.
+  - New: `admin-module-builder/references/fe-first-mock-layer.md`, `admin-module-builder/templates/api-contract.md`, **Gate 2b (FE Preview)**.
   - New module status `prototype` (never counts as done); QA checklist §P.
   - Validator: `prototype` requires a spec and `api-contract.md`; `done` is rejected while Data source is `mock`; unfinished prototypes fail at final stage.
   - Orchestrator rule 6 now allows mock data only inside the labelled, production-blocked mock adapter.

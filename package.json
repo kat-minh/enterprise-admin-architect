@@ -1,0 +1,16 @@
+{
+  "name": "enterprise-admin-architect",
+  "version": "1.2.0",
+  "private": true,
+  "description": "Skill suite for building enterprise-grade admin systems for existing websites. This package.json only hosts the dev scripts; the skills have no dependencies.",
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "check": "node scripts/check-repo.mjs",
+    "test": "node --test",
+    "bundle": "node scripts/bundle.mjs",
+    "validate:example": "node skills/admin-qa-gate/scripts/validate-admin-docs.mjs --root examples/e-commerce --stage build",
+    "verify": "node scripts/check-repo.mjs && node --test && node skills/admin-qa-gate/scripts/validate-admin-docs.mjs --root examples/e-commerce --stage build"
+  }
+}

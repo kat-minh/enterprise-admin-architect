@@ -1,6 +1,6 @@
 # QA Report
 
-> Project: <name> · Date: <YYYY-MM-DD> · Environment: <dev/staging, commit SHA> · Tester: Claude (+ user review)
+> Project: <name> · Date: <YYYY-MM-DD> · Environment: <dev/staging, commit SHA> · Tester: <agent or person> (+ user review)
 > Delivery mode: full-stack | fe-first (list any modules still `prototype` on mock data under "Not verified")
 
 ## Summary

@@ -69,7 +69,7 @@ Rules: mock data only inside the adapter; always labelled "Prototype data"; emul
 |---|---|
 | Landing/brochure + contact form (≤ 5 entities) | Merge Gates 1 and 2. Modules: auth, roles (2), dashboard (leads), leads inbox, content/settings, audit. Skip multi-level IA. |
 | Typical business site (6-20 entities) | Full pipeline as written. |
-| Large platform (20+ entities, multi-role, workflows) | Split Session 3 into waves (per domain), one gate per wave; write module specs in parallel with subagents; keep one reference module authoritative. |
+| Large platform (20+ entities, multi-role, workflows) | Split Session 3 into waves (per domain), one gate per wave; write module specs in parallel (sub-agents, if your tool has them); keep one reference module authoritative. |
 
 ## Fast path ("just build it")
 

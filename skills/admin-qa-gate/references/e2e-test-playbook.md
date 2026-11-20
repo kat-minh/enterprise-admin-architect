@@ -107,7 +107,7 @@ Run the project's existing test suite. Smoke the public routes (list from the sc
 
 ## Browser-automation walkthrough protocol
 
-When using Claude in Chrome / Playwright MCP instead of a test runner:
+When using a browser-automation tool (Playwright, a browser MCP server, or an agent's built-in browser) instead of a test runner:
 1. Open a new tab (don't reuse the user's tabs); log in as each role in turn (dev credentials).
 2. For each module: perform golden path, one negative path, filters/sort/page, open drawer + detail, edit form with validation error, empty and error states (use filters/dev toggles).
 3. After each page: read console messages filtered for errors/warnings; read network requests filtered by `/api/admin`; note any 4xx/5xx that are not expected.

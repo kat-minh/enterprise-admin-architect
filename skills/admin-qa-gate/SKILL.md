@@ -22,7 +22,7 @@ Fix errors (broken cross-references, modules marked done without verification, r
 Detect and run the project's scripts: typecheck (`tsc --noEmit`), lint, build, unit/API tests, existing e2e. Record command, result, date in `implementation-status.md`. A failing check is a finding, not something to hide.
 
 ### 3. Run the app and exercise it
-Start the dev server using the project's own script (the `run` skill can help). Prefer real interaction: browser automation (Claude in Chrome / Playwright) to click through; read console messages (filter errors) and network requests (`/api/admin`). Use dev/staging data only - never production. Avoid native `alert/confirm` dialogs; they block automation.
+Start the dev server using the project's own script. Prefer real interaction: browser automation (Playwright, a browser MCP server, or your tool's built-in browser) to click through; read console messages (filter errors) and network requests (`/api/admin`). Use dev/staging data only - never production. Avoid native `alert/confirm` dialogs; they block automation.
 
 For each module under test, follow `references/e2e-test-playbook.md`:
 - **Workflow**: golden path + the main negative paths (invalid transition → rejected, validation errors, conflicts).

@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Node ${{ matrix.node }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node: [18, 20, 22]
+        include:
+          - os: windows-latest
+            node: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Repository checks (skills frontmatter, references, manifests, hygiene)
+        run: node scripts/check-repo.mjs
+      - name: Unit tests (scanner, docs validator, bundler)
+        run: node --test
+      - name: Example docs pass the validator
+        run: node skills/admin-qa-gate/scripts/validate-admin-docs.mjs --root examples/e-commerce --stage build
