@@ -1,0 +1,21 @@
+name: Something in a skill is wrong or misleading
+description: A skill gave bad guidance, a script failed, or a gate let something through
+labels: [bug]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      options: [enterprise-admin-architect, admin-discovery, admin-information-architecture, admin-design-system, admin-module-builder, admin-qa-gate, admin-ui-audit, scan-project.mjs, validate-admin-docs.mjs, bundle.mjs, other]
+    validations: { required: true }
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened and what you expected
+      description: Quote the instruction or the script output. Do not paste secrets or customer data.
+    validations: { required: true }
+  - type: input
+    id: stack
+    attributes:
+      label: Your stack and AI tool
+      placeholder: "Next.js 15 + Prisma, Claude Code"

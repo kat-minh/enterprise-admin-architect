@@ -13,6 +13,7 @@ Read when: building permission infrastructure (foundation step) or guarding a ne
 - Sessions, caching, MFA step-up
 - Seeding and bootstrapping
 - Tests that prove enforcement
+- Editable roles (only when asked for)
 
 ---
 
@@ -128,3 +129,18 @@ For each module (see `admin-qa-gate/references/e2e-test-playbook.md`):
 3. With permission → success; with `own` scope → only own records, another user's record → 403/404.
 4. Role change takes effect immediately; deactivated user's session fails.
 5. Matrix test: iterate the role × permission matrix doc against live endpoints.
+
+## Editable roles (when the business must change permissions at runtime)
+
+Only build this when the owner asked for it ("why can't the admin change permissions?"); otherwise roles in code are simpler and safer. The design that held up in a real build:
+
+- **The catalog of permissions stays in code** (keys, descriptions, sensitive flag, allowed scopes, grantable flag). **Roles and their grants are data** (`roles`, `role_permissions`). A migration adds new catalog keys; the UI cannot invent one.
+- **One locked system role** (Super Admin): always the whole catalog, no rows in the grants table, cannot be edited, reset or deleted. Built-in roles are editable and **resettable** to their shipped matrix, never deletable. Custom roles are created, renamed, edited and deleted (not while any admin, active or not, holds the role).
+- **Non-grantable permissions**: the ones that manage roles and admin accounts are reserved to the system role. Without this rule a custom role could grant itself `roles.manage` or create a Super Admin. Enforce it on create, on update and when copying a role (copying silently skips them); drop such grants when the permission map is built, so editing the table by hand cannot escalate either.
+- **Nobody edits the role they hold, and nobody grants what they do not hold** (same scope or wider). State which rule fires first; some are unreachable over HTTP today and still need a test through the service.
+- **Every change is audited with a reason and the whole before/after map** (and the number of admins affected), in the same transaction. A no-op save writes nothing. Creating a role is capped (e.g. 20) and serialised, so parallel creates cannot overshoot.
+- **Optimistic concurrency**: the edit carries the role's `updated_at` from the read; a stale value is `409` with the current role, and the UI reloads it. Without it, edits are serialised by a row lock and the audit rows still form an unbroken chain.
+- **Propagation**: the permission snapshot is cached per process for a few seconds (≤ 5 s); say the number in the UI ("takes effect within a few seconds"), the runbook and the tests, and measure it. Fail safe: if the tables cannot be read, fall back to the shipped matrix for built-in roles, deny for custom ones.
+- **The UI**: a matrix with a column per role; "Edit permissions" turns one column into checkboxes (locks for reserved rows, a scope select only where a permission has scopes); a bar shows the count of changes; saving opens a review dialog listing every addition, removal and scope change, the sensitive ones marked, the number of affected admins, and a required reason. The role's own card says why it cannot be edited when it is the viewer's role.
+- **Role names are data too**: show the stored name everywhere a role is shown (badges, filters, audit rows). Keep localised labels for built-in roles only while the stored name is still the shipped one.
+- **Tests**: a fresh database equals the documented matrix; a custom role gets exactly its permissions and a revoked one is refused within the propagation window; reserved permissions are refused through the API; a role held by an admin cannot be deleted; two editors on one role give a `409`; the system role refuses every write; the audit rows carry reasons.

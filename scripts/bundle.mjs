@@ -6,7 +6,9 @@
  * Usage:
  *   node scripts/bundle.mjs <phase> [--domains a,b|all] [--no-orchestrator] [--out file]
  *
- * Phases: orchestrator | discovery | ia | design | build | qa
+ * Phases: orchestrator | discovery | ia | design | build | qa | ui-audit
+ *   ui-audit is the standalone UI audit of an existing admin: it also inlines the audit script, the quality gates, the test playbook and the
+ *   visual / accessibility / dashboard / front-end architecture references it points to.
  * --domains   discovery only: which domain playbooks to inline (file names without .md, or "all").
  *             The domain index and the custom-domain playbook are always included.
  */
@@ -23,7 +25,19 @@ const PHASES = {
   design: 'admin-design-system',
   build: 'admin-module-builder',
   qa: 'admin-qa-gate',
+  'ui-audit': 'admin-ui-audit',
 };
+
+// the standalone audit skill points at files that live in other skills; a chat-only assistant needs them inlined
+const UI_AUDIT_FILES = [
+  ['admin-qa-gate', 'templates/ui-audit.mjs'],
+  ['admin-qa-gate', 'references/quality-gates.md'],
+  ['admin-qa-gate', 'references/e2e-test-playbook.md'],
+  ['admin-design-system', 'references/visual-standard.md'],
+  ['admin-design-system', 'references/accessibility-responsive.md'],
+  ['admin-design-system', 'references/dashboard-design.md'],
+  ['admin-module-builder', 'references/frontend-architecture.md'],
+];
 
 const argv = process.argv.slice(2);
 const usage = () => {
@@ -82,6 +96,10 @@ if (phase === 'discovery') {
     process.exit(2);
   }
   for (const d of ['_index', '_custom-domain-playbook', ...requested]) addFile(skillDir, path.join('references', 'domains', `${d}.md`));
+}
+
+if (phase === 'ui-audit') {
+  for (const [skill, rel] of UI_AUDIT_FILES) addFile(path.join(SKILLS, skill), rel);
 }
 
 const text = parts.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';

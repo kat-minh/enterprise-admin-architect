@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/assets/social-preview.png" alt="Enterprise Admin Architect: khám phá, kiến trúc, thiết kế, xây dựng, kiểm chứng, báo cáo" width="720"></p>
+
 # Enterprise Admin Architect
 
 [English](README.md) · **Tiếng Việt**
@@ -65,12 +67,14 @@ Kèm ma trận role × quyền (ví dụ `orders.refund` chỉ dành cho Finance
 | `admin-design-system` | Phase 4: tokens, app shell, table/form/detail/dashboard, accessibility, locale | `design-system.md` + shell + module mẫu |
 | `admin-module-builder` | Phase 5-7: spec → backend → UI → RBAC → audit → bảo mật | `module-specifications/*.md`, code, `implementation-status.md` |
 | `admin-qa-gate` | Phase 8: validator, test phân quyền/workflow/trạng thái, báo cáo trung thực | `qa-report.md` |
+| `admin-ui-audit` | **Dùng riêng**: audit và sửa giao diện của một admin *đã có* (audit trình duyệt tự động theo vai trò × độ rộng × theme, review bằng mắt, dashboard, hiệu năng) | bảng phát hiện + ảnh chụp |
 
 Kèm theo:
 - `admin-discovery/scripts/scan-project.mjs` - quét project (stack, route, API, model, enum/status, admin có sẵn, role, form công khai, **chỉ tên** biến môi trường).
 - `admin-qa-gate/scripts/validate-admin-docs.mjs` - kiểm tra tài liệu nhất quán (module ↔ quyền ↔ route ↔ spec ↔ bằng chứng verify).
 - `admin-discovery/references/domains/` - 15 playbook domain (e-commerce, app người dùng cuối/PWA, du lịch/booking, giáo dục, corporate, tin tức, SaaS, marketplace, phòng khám/đặt lịch, bất động sản, tuyển dụng, F&B, sự kiện/vé, cộng đồng/UGC, fintech/KYC) và một playbook cho domain đặc thù.
-- `scripts/bundle.mjs` - tạo prompt tự đủ cho từng phase, dành cho trợ lý chỉ có giao diện chat.
+- `scripts/bundle.mjs` - tạo prompt tự đủ cho từng phase (gồm `ui-audit`), dành cho trợ lý chỉ có giao diện chat.
+- [`docs/coverage-map.md`](docs/coverage-map.md) - bộ skill phủ những gì so với danh sách "admin dashboard toolkit" thường gặp, ở mức nào (đã chứng minh / có gate / có công cụ / chỉ hướng dẫn) và cố ý bỏ gì (tiếng Anh).
 - `examples/e-commerce/` - bộ `docs/admin` mẫu hoàn chỉnh, qua được validator.
 
 Hai script đều là Node thuần (>= 18), không có dependency và không gọi mạng.

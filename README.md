@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/assets/social-preview.png" alt="Enterprise Admin Architect: discover, architect, design, build, verify, report" width="720"></p>
+
 # Enterprise Admin Architect
 
 **English** · [Tiếng Việt](README.vi.md)
@@ -42,6 +44,19 @@ Settings & Access   Admin Users · Roles & Permissions · Audit Log · Settings
 
 Plus a role × permission matrix (for example `orders.refund` only for Finance), per-module specifications, a design system, and a QA report that records what was actually verified.
 
+## Proven, not promised
+
+The suite was proven by using it to build a full-stack admin (backend, separate admin app, public app untouched) for a real consumer web app, on clones of the project and a throw-away database. What that run produced, and what the gates caught on the way:
+
+- **Server-side enforcement, tested per role:** a role × endpoint matrix against the API (403 when forbidden, not only a hidden button), with the matrix document read at run time as the oracle.
+- **Dashboard figures verified independently:** every metric recomputed from raw rows in plain code and compared for 7, 30 and 90 days, including boundary rows at the edge of a day in the business time zone.
+- **UI audit before the owner has to point things out:** every page × role × phone / tablet / desktop × light / dark; it found a second scrollbar, clipped text, contrast failures, a popover spilling out of its card, and a widget that asked for data its role may not see.
+- **Large data:** 200,000 users and 400,000 trips; list endpoints that were 1.5-8 s became sub-second after the recipe in the QA playbook.
+- **Public product untouched** except where intended; editing texts, banners and brand colours in the admin was verified in the real public app (draft invisible, preview, publish, rollback, endpoint down).
+- **A delegated agent's work re-verified on a separate stack** before it was believed.
+
+What is only guidance, and what is deliberately left out, is listed in [`docs/coverage-map.md`](docs/coverage-map.md).
+
 ## Why it exists
 
 | Common problem | How the suite handles it |
@@ -65,12 +80,14 @@ Plus a role × permission matrix (for example `orders.refund` only for Finance),
 | `admin-design-system` | Phase 4: tokens, app shell, table/form/detail/dashboard, accessibility, locale | `design-system.md` + shell + a reference module |
 | `admin-module-builder` | Phase 5-7: spec → backend → UI → RBAC → audit → security | `module-specifications/*.md`, code, `implementation-status.md` |
 | `admin-qa-gate` | Phase 8: validator, permission/workflow/state tests, honest report | `qa-report.md` |
+| `admin-ui-audit` | **Standalone**: audit and fix the UI of an *existing* admin (automated browser audit per role × width × theme, visual review, dashboard and performance pass) | findings table + screenshots |
 
 Also included:
 - `admin-discovery/scripts/scan-project.mjs` - project scanner (stack, routes, API, models, enums/status, existing admin, roles, public forms, env var **names only**).
 - `admin-qa-gate/scripts/validate-admin-docs.mjs` - documentation consistency checker (module ↔ permission ↔ route ↔ spec ↔ verification evidence).
 - `admin-discovery/references/domains/` - 15 domain playbooks (e-commerce, travel/booking, education, corporate, news, SaaS, marketplace, clinic/appointments, real estate, job board, F&B, events/ticketing, community/UGC, fintech/KYC, consumer app / PWA) plus a playbook for unusual domains.
-- `scripts/bundle.mjs` - builds a self-contained prompt per phase for chat-only assistants.
+- `scripts/bundle.mjs` - builds a self-contained prompt per phase (including `ui-audit`) for chat-only assistants.
+- [`docs/coverage-map.md`](docs/coverage-map.md) - what the suite covers against the usual "admin dashboard toolkit" wish-list, at what level (proven / gate / tool / guidance), and what is deliberately left out.
 - `examples/e-commerce/` - a complete sample `docs/admin` that passes the validator.
 
 Both scripts are dependency-free Node (>= 18) and make no network requests.

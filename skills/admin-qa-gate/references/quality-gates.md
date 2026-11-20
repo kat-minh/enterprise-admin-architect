@@ -60,9 +60,11 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] UX-7 Loading / empty (initial + filtered) / error / forbidden / not-found states everywhere.
 - [ ] UX-8 Destructive actions confirmed proportionally; undo/soft delete where possible.
 - [ ] UX-9 Dashboard leads with actionable queues; no placeholder stats; every tile drills down.
-- [ ] UX-10 Responsive at 1440/1024/768/390; only tables scroll horizontally.
+- [ ] UX-10 Responsive at 1440/1024/768/390; only tables scroll horizontally; exactly one vertical scroll region per page (the document never scrolls when the shell has its own scroll area).
 - [ ] UX-11 Toasts consistent; messages actionable; no native alert/confirm.
 - [ ] UX-12 None of the "AI admin tells" from `enterprise-admin-architect/references/principles-and-antipatterns.md`.
+- [ ] UX-13 The automated UI audit (`templates/ui-audit.mjs`) is clean for every role, page, width and theme (no `must` finding), and the screenshots of all pages were reviewed by a person (or by you, looking) with the notes in `qa-report.md`.
+- [ ] UX-14 The dashboard meets the enterprise bar (`admin-design-system/references/dashboard-design.md`): a metric catalogue exists and the widgets are its rows; tasks and state counters are separate; a range selector with previous-period comparison, time zone and freshness; a definition and a way in for every number; a different landing view per role, each reviewed as that role; CSV export of what is on screen.
 
 ## C. Functionality
 
@@ -78,6 +80,7 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] FN-10 Notifications/emails/side effects triggered by transitions actually fire (or are documented gaps).
 - [ ] FN-11 Dashboard numbers match the underlying data (spot-check against lists/DB).
 - [ ] FN-12 Errors are handled: API down, 401 (re-login with return URL), 403, 404, 409, 500.
+- [ ] FN-13 Every dashboard figure was compared with an independent recomputation from the raw rows (not the same SQL) for every range, including boundary rows (the last and first minute of a day in the business time zone, exactly N days ago, archived rows) and an empty database; mutually exclusive buckets add up to the total (`admin-module-builder/references/analytics-endpoints.md`).
 
 ## D. Security
 
@@ -92,6 +95,7 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] SEC-9 PII masked by default; reveal audited; secrets never in client, logs, or audit diffs.
 - [ ] SEC-10 Dangerous features (impersonation, bulk delete, export, role edit) have extra controls.
 - [ ] SEC-11 Last Super Admin protected; no privilege self-escalation.
+- [ ] SEC-12 (only when roles are editable at runtime, `rbac-implementation.md`) The system role is locked; permissions that manage roles and admin accounts cannot be granted to any other role, by API, by copying or by editing the table; nobody edits the role they hold; every change is audited with a reason and the before/after map in one transaction; a stale edit is `409`; a revoked permission is refused within the stated propagation window (measured); a role held by an admin cannot be deleted.
 
 ## E. Engineering
 
@@ -105,6 +109,8 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] ENG-8 Migrations reversible and applied cleanly on a fresh DB; seed script works.
 - [ ] ENG-9 No unnecessary new dependencies; additions justified in docs.
 - [ ] ENG-10 Admin bundle isolated from public bundle (route group/dynamic imports).
+- [ ] ENG-11 Every front-end type that mirrors an API response was compared with the real response (a probe script prints each endpoint's shape as a real role); no `any` or loose compatibility shim is left without a reason.
+- [ ] ENG-12 An error boundary per route and per independent widget; a render error shows a recoverable screen with the request id, never a blank page; unhandled rejections and render errors are reported; no `console.error` on any happy path.
 
 ## F. Performance
 
@@ -114,6 +120,8 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] PERF-4 Heavy exports/reports are async/cached.
 - [ ] PERF-5 UI responsive with 100-row pages; no layout shift; large lists virtualised if needed.
 - [ ] PERF-6 Per-row counts and aggregates on a list are computed for the returned page only (keys paged first); sorting by an aggregate uses a pre-aggregated join, not one lookup per row. Before/after timings are in the QA report.
+- [ ] PERF-7 Aggregate endpoints (dashboard, reports) were timed on the large dataset, cold and warm, for the widest range, section by section; the cache strategy (TTL, stale-while-revalidate, `generated_at`) is documented; a cold computation over budget is recorded with its number and plan, not hidden by the cache.
+- [ ] PERF-8 A front-end budget is set and recorded (initial JavaScript per route in gzip, largest chunk, largest contentful paint and interaction latency on the dashboard and on the biggest list, requests before the first row); route-level splitting and lazy heavy libraries are verified in the build output.
 
 ## G. Accessibility
 

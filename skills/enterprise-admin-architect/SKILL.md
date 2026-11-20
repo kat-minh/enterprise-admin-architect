@@ -52,7 +52,7 @@ Details of each gate, scaling for small sites and the "just build it" fast path:
 1. **Resume check.** If `docs/admin/implementation-status.md` or `module-inventory.md` exists, read them, tell the user in 3-5 lines where things stand, and continue from the next incomplete step. Do not restart.
 2. **Detect mode** (ask only what you cannot infer from the repo):
    - *Greenfield admin* - no admin exists → full pipeline.
-   - *Extend/audit* - an admin exists → map existing modules into the inventory (`status: exists`), audit against `admin-qa-gate/references/quality-gates.md`, build only the gaps. Never rewrite working modules.
+   - *Extend/audit* - an admin exists → map existing modules into the inventory (`status: exists`), audit against `admin-qa-gate/references/quality-gates.md`, build only the gaps. Never rewrite working modules. To audit only the UI quality of an existing admin (layout, consistency, accessibility, responsive, dashboard usefulness, front-end performance) without a rebuild, use `admin-ui-audit`.
    - *Placement* - follow the repo: single Next.js app → route group `(admin)` + `/admin`; monorepo → `apps/admin`; keep the public bundle free of admin code. If the public site is a **PWA** (service worker / offline cache) or is deployed separately from the API, prefer a **separate admin app on its own origin**, so admin code is never bundled, precached or cached offline with the public app.
    - *Backend* - API/DB exists, or frontend-only/static site? If there is no backend, Gate 1 must decide where data lives (this changes scope drastically).
    - *Delivery mode* - `full-stack` or `fe-first` (see above). If the user already said "build the FE first / cho xem giao diện trước", choose `fe-first` without asking again.

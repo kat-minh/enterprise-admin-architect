@@ -1,0 +1,20 @@
+name: Request or contribute a domain playbook
+description: A business domain the suite does not cover well (clinic, logistics, school, ...)
+labels: [enhancement, good first issue]
+body:
+  - type: input
+    id: domain
+    attributes:
+      label: Domain
+      placeholder: "logistics / delivery"
+    validations: { required: true }
+  - type: textarea
+    id: modules
+    attributes:
+      label: Modules an operator of this business needs that a generic admin misses
+      description: What they do all day, the queues, the states, the numbers they watch.
+    validations: { required: true }
+  - type: textarea
+    id: example
+    attributes:
+      label: Anything we can use as an example (no private data)

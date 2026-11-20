@@ -56,6 +56,8 @@ Read when: building create/edit forms, settings pages, wizards.
 | Rich text | Sanitised output (XSS), restricted embeds, image upload integration, paste cleaning |
 | Tags / multi-select | Create on enter, limits, dedupe |
 | Dependent fields | Reset dependents when parent changes; show why disabled |
+| Conditional fields | Show a field only when its rule holds (`aria-expanded` on the controller); a hidden field is neither validated nor submitted and its value is cleared; the rule lives in one schema shared by client and server |
+| Date range | Start ≤ end validated on both sides; presets (today, 7 days, this month); the business time zone stated next to scheduled times |
 | Secrets / API keys | Write-only; show masked + "replace"; never re-display |
 | Status / lifecycle | Don't expose as free text; use transition actions with reason where needed |
 | Address (VN) | Follow the structure used by the public site and backend; don't invent levels |

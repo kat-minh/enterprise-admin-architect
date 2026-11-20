@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or "show your result"
+    url: https://github.com/kat-minh/enterprise-admin-architect/discussions
+    about: Ask how to use the suite, or share the admin you built with it (screenshots and qa-report welcome).

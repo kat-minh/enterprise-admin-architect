@@ -30,7 +30,7 @@ Implement only what the inventory needs, to the specs in:
 - `references/data-table-spec.md` (DataTable, FilterBar, BulkActionBar, SavedViews)
 - `references/form-spec.md` (FormSection, StickyFormFooter, field components, dirty guard)
 - `references/detail-page-spec.md` (EntityHeader, KeyValueList, Timeline, tabs rules)
-- `references/dashboard-design.md` (AttentionQueue, StatTile, trend widgets)
+- `references/dashboard-design.md` (metric catalogue, tasks vs state counters, period comparison, role views, chart choice, AttentionQueue, StatTile, trend widgets)
 Plus: StatusBadge, ConfirmDialog (3 risk levels), PermissionGate, EmptyState, ErrorState, Skeletons, Drawer, FileUploader, Money/DateTime/ID display helpers.
 
 ### 5. Build the reference module (vertical slice)

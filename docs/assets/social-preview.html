@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Enterprise Admin Architect - social preview</title>
+<style>
+  :root { --bg: #0b1020; --ink: #f4f6ff; --mute: #9aa6d1; --acc: #5b8cff; --acc2: #7ee0c3; --card: #121a33; --line: #243058; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1280px; height: 640px; background: var(--bg); color: var(--ink); font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  .wrap { position: relative; width: 1280px; height: 640px; padding: 56px 64px; overflow: hidden; background: radial-gradient(900px 480px at 85% -10%, rgba(91,140,255,.28), transparent 60%), radial-gradient(700px 400px at -5% 110%, rgba(126,224,195,.16), transparent 60%), var(--bg); }
+  .tag { display: inline-flex; gap: 10px; align-items: center; padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; color: var(--mute); font-size: 20px; letter-spacing: .02em; background: rgba(18,26,51,.7); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--acc2); }
+  h1 { margin: 26px 0 14px; font-size: 76px; line-height: 1.04; letter-spacing: -.02em; font-weight: 800; }
+  h1 span { background: linear-gradient(90deg, var(--acc), var(--acc2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  p.sub { margin: 0; max-width: 980px; font-size: 30px; line-height: 1.35; color: #c9d2f4; }
+  .flow { position: absolute; left: 64px; right: 64px; bottom: 56px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
+  .step { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+  .step b { display: block; font-size: 22px; margin-bottom: 4px; }
+  .step i { font-style: normal; font-size: 16px; color: var(--mute); }
+  .n { color: var(--acc); font-weight: 800; margin-right: 8px; }
+  .gate { position: absolute; right: 64px; top: 58px; display: flex; gap: 12px; }
+  .pill { padding: 8px 16px; border-radius: 12px; border: 1px solid var(--line); background: rgba(18,26,51,.7); font-size: 20px; color: var(--ink); }
+  .pill em { font-style: normal; color: var(--acc2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tag"><span class="dot"></span> Agent skills for Claude Code and other AI coding tools</div>
+  <div class="gate"><div class="pill"><em>3</em> approval gates</div><div class="pill"><em>0</em> mock data in prod</div></div>
+  <h1>Enterprise<br /><span>Admin Architect</span></h1>
+  <p class="sub">Build the back office behind your website the way a senior team would: discover, design, build, and verify with evidence.</p>
+  <div class="flow">
+    <div class="step"><b><span class="n">1</span>Discover</b><i>scan code, ask the owner</i></div>
+    <div class="step"><b><span class="n">2</span>Architect</b><i>modules, routes, RBAC</i></div>
+    <div class="step"><b><span class="n">3</span>Design</b><i>tokens, kit, specs</i></div>
+    <div class="step"><b><span class="n">4</span>Build</b><i>API, UI, audit trail</i></div>
+    <div class="step"><b><span class="n">5</span>Verify</b><i>403 per role, UI audit</i></div>
+    <div class="step"><b><span class="n">6</span>Report</b><i>what is really done</i></div>
+  </div>
+</div>
+</body>
+</html>

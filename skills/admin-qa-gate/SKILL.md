@@ -1,6 +1,6 @@
 ---
 name: admin-qa-gate
-description: Phase 8 of building an admin system - verify and report honestly. Runs the docs consistency validator, typecheck/lint/build/tests, click-through of real workflows in the running app, permission matrix tests against the API (UI hidden AND server 403), states (loading/empty/error/forbidden), responsive/accessibility/security/performance spot checks, public-site regression, then writes qa-report.md and the final report. Use after implementing any admin module or before handing off the admin, or when asked to "QA the admin", "kiểm tra admin", verify permissions, audit an existing admin against enterprise standards, or check what is really done vs only specified.
+description: Phase 8 of building an admin system - verify and report honestly. Runs the docs consistency validator, typecheck/lint/build/tests, click-through of real workflows in the running app, permission matrix tests against the API (UI hidden AND server 403), states (loading/empty/error/forbidden), responsive/accessibility/security/performance spot checks, public-site regression, then writes qa-report.md and the final report. Use after implementing any admin module or before handing off the admin, or when asked to "QA the admin", "kiểm tra admin", verify permissions, audit an existing admin against the enterprise gates, or check what is really done vs only specified (for a UI-only audit without a rebuild see admin-ui-audit).
 ---
 
 # Admin QA Gate (Phase 8)
@@ -8,7 +8,7 @@ description: Phase 8 of building an admin system - verify and report honestly. R
 Principle: **a module is complete only when its intended business workflow works.** "It renders" and "it compiles" are not completion. Report outcomes faithfully - failures, skipped checks and unverified areas included.
 
 Inputs: `docs/admin/*`, the codebase, a runnable app. Outputs: `docs/admin/qa-report.md` (template in `templates/`), updated `implementation-status.md` + inventory statuses.
-References: `references/quality-gates.md` (checklists, severities, pass criteria), `references/e2e-test-playbook.md` (how to test, with code patterns; includes the large-dataset recipe and the checks for admin-managed public content). Templates: `templates/qa-report.md`, `templates/runbook.md` (gate DOC-5: write it before Gate 3).
+References: `references/quality-gates.md` (checklists, severities, pass criteria), `references/e2e-test-playbook.md` (how to test, with code patterns; includes the large-dataset recipe and the checks for admin-managed public content). Templates: `templates/qa-report.md`, `templates/runbook.md` (gate DOC-5: write it before Gate 3), `templates/ui-audit.mjs` (automated UI audit across roles, widths and themes: run it after every module, gate UX-13; the standalone skill `admin-ui-audit` wraps it for an existing admin).
 
 ## Procedure
 

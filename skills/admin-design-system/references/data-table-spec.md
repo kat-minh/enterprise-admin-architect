@@ -37,6 +37,7 @@ Read when: building or reviewing any list page.
 | Column resize / reorder, pinned columns | | | ✔ |
 | Virtualisation (> ~500 rows rendered) | | | ✔ |
 | Inline editing | | | ✔ (only for simple, safe fields) |
+| Row expansion (a detail strip under the row) | | | ✔ (when the extra fields are few and read-only; otherwise a drawer) |
 | Cursor pagination (very large/append-only) | | | ✔ |
 
 **Never** load thousands of records into the browser to filter client-side. Lists > ~200 potential rows use **server-side** pagination, filtering and sorting.
@@ -60,6 +61,7 @@ Response: `{ data: T[], meta: { total, page, pageSize, totalPages } }` (or `next
 - Numeric/money right-aligned with tabular numerals and currency; dates in locale; booleans as badges/icons with text for a11y; long text truncated with tooltip.
 - Overflow menu (⋯): secondary actions; destructive last, red, separated; disabled-with-tooltip when lacking permission or invalid state.
 - Inline status change only when the transition is safe and reversible; otherwise route through a dialog capturing reason.
+- **Export** respects the current search and filters and the viewer's permissions (masked fields stay masked); big sets run as a background job. A CSV is UTF-8 with a BOM (spreadsheets read accents), values quoted, and a cell that starts with `=`, `+`, `-` or `@` is neutralised (formula injection). An export is an audited action when it contains personal data.
 
 ## States
 
