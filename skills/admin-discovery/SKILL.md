@@ -42,6 +42,8 @@ Use `references/universal-modules.md` for the three layers:
 
 For each module give: ID (kebab-case), business purpose, layer, evidence tag with source, priority, dependencies, status. Priorities: P0 = admin cannot operate without it · P1 = needed in first weeks · P2 = scale/nice-to-have. Apply "smallest complete system": drop or defer anything with no operational justification.
 
+**Existing admin?** If the scan reports `existingAdmin.exists`, inventory it before planning anything: list each existing admin route/module, map it to an inventory ID (status `exists`), and record in `product-discovery.md` § "Existing admin audit" what is weak or missing (no server-side authz, client-side filtering of large lists, no audit log, hard deletes, fake data, inconsistent UI). Plan only the gaps. Never rewrite working modules; propose a replacement only with evidence.
+
 ### 7. Identify operators and workflows
 List who will operate (super admin, content editor, support, finance, ops…) and write 3-6 "day in the life" workflows ("process a refund", "approve a booking change"). These drive roles, dashboard queues and module specs.
 

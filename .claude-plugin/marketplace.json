@@ -11,7 +11,7 @@
       "name": "enterprise-admin-architect",
       "source": "./",
       "description": "Skill suite to analyse an existing website and build its enterprise-grade admin system end-to-end (discovery → IA/RBAC → design system → modules → QA).",
-      "version": "1.1.0"
+      "version": "1.1.1"
     }
   ]
 }

@@ -56,3 +56,9 @@
 ## 10. Open questions
 | # | Question | Why it matters | Recommended default |
 |---|---|---|---|
+
+## 11. Existing admin audit
+Fill only if an admin already exists (otherwise write `N/A - no existing admin`).
+
+| Existing route / module | Maps to module ID | Verdict (keep / extend / replace) | Gaps (authz, pagination, audit, UX, data) | Evidence |
+|---|---|---|---|---|

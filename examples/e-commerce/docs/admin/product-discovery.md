@@ -67,3 +67,7 @@ Small online shop selling physical products with card payments via Stripe. Custo
 |---|---|---|---|
 | 1 | Is there a separate vendor portal? | Marketplace modules | No |
 | 2 | Who sends order emails today? | Templates/notifications | Code-owned, keep |
+| 3 | Delivery mode: full-stack or fe-first? | Whether the UI is approved on a mock layer before backend work | full-stack (the repo already has order/product APIs) |
+
+## 11. Existing admin audit
+N/A - no existing admin.

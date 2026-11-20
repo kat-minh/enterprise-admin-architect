@@ -23,7 +23,7 @@ The public website serves its users. **The admin system operates the business be
 7. **Authorization is enforced on the server.** Hiding a button is UX, not security.
 8. **Docs are the contract.** `docs/admin/*` is the shared memory between phases and sessions. Keep it in sync with reality; never mark something done that was not verified.
 9. **Stop at gates.** Three human approval gates (below). Do not run discovery → build in one uncontrolled pass.
-10. **Speak the user's language.** Reply and write `docs/admin/*` in the language the user uses (Vietnamese in → Vietnamese out); keep code, identifiers and permission keys in English.
+10. **Speak the user's language.** Reply, and write the free-text content of `docs/admin/*`, in the language the user uses (Vietnamese in → Vietnamese out). Keep in English: code, identifiers, permission keys, **and the machine-checked structure of the docs - section headings, table column headers and enum values (`core`, `P0`, `in-progress`…) exactly as in the templates**. Translating those makes `validate-admin-docs.mjs` fail.
 
 ## Pipeline
 
@@ -34,7 +34,7 @@ The public website serves its users. **The admin system operates the business be
 | 3. Implement & QA | `admin-module-builder` (per module) → `admin-qa-gate` | `module-specifications/*.md`, code, `implementation-status.md`, `qa-report.md` | **Gate 3** - approve QA report / final handoff |
 | *3a/3b in `fe-first`* | 3a FE on mock → **Gate 2b FE Preview** → 3b backend + swap | `api-contract.md` (frozen v1 at Gate 2b) | **Gate 2b**, then Gate 3 |
 
-Invoke phase skills with the Skill tool. If unavailable, read the sibling `../<skill-name>/SKILL.md` directly.
+Invoke phase skills with the Skill tool (installed as a plugin, their names are namespaced, e.g. `enterprise-admin-architect:admin-discovery`). If unavailable, read the sibling `../<skill-name>/SKILL.md` directly.
 
 ## Delivery modes
 

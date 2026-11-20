@@ -2,6 +2,7 @@
 
 > Project: Fixture Shop (example) · Last updated: 2026-11-20 · Current session: 3 Build & QA
 > `Status` of each module lives in `module-inventory.md`. This file records verification evidence.
+> **Illustrative example:** the tests, commands and results below are invented to show the format; nothing was actually run.
 
 ## Module verification
 `Verified`: `yes` · `partial` · `no`

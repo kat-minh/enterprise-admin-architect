@@ -1,141 +1,157 @@
 # Enterprise Admin Architect
 
-Bộ skill cho **Claude Code** để dựng một **hệ thống admin / back-office / CMS chuẩn enterprise** cho một website *đã có sẵn* — thay vì một dashboard chung chung (sidebar + 4 thẻ thống kê + vài bảng CRUD).
+**English** · [Tiếng Việt](README.vi.md)
 
-> Website chính phục vụ người dùng. **Admin vận hành doanh nghiệp đằng sau website đó.**
+A suite of **Claude Code skills** that builds a **professional, enterprise-grade admin system (back office / CMS)** for a website you have *already built* - instead of the usual generic dashboard (sidebar + four stat cards + a few CRUD tables).
 
-Skill buộc Claude làm đúng thứ tự: **phân tích website trước → thiết kế kiến trúc admin → dựng design system → code từng module → kiểm thử thật**, có điểm dừng để bạn duyệt ở giữa.
+> The public website serves its users. **The admin system operates the business behind it.**
 
-## Điểm khác biệt
+The skills force Claude to work in the right order: **analyse the website → design the admin architecture → build the design system → implement module by module → verify for real**, with approval gates where you decide.
 
-| Vấn đề thường gặp | Skill xử lý thế nào |
+## What makes it different
+
+| Common problem | How the skills handle it |
 |---|---|
-| AI nhảy vào code dashboard CRUD ngay | 3 cổng duyệt (gate); cấm viết code admin trước khi module inventory được duyệt |
-| Module "bịa" ra, không liên quan nghiệp vụ | Mỗi module có nhãn bằng chứng: `confirmed` / `implied` / `proposed` (cần bạn duyệt) |
-| Module bắt buộc vs module đặc thù lẫn lộn | 3 lớp: **core** (mọi web đều phải có) → **foundation** (có điều kiện áp dụng) → **domain** (sinh từ nghiệp vụ thật) |
-| Dashboard toàn số liệu giả | Quy tắc "real or documented": không mock, không fake success; thiếu backend thì ghi vào gap list |
-| Chỉ ẩn nút là xong phân quyền | RBAC kiểm tra ở server, có test API trả 403 cho từng role |
-| Nói "xong" khi mới render được trang | `done` chỉ khi workflow chạy thật + có bằng chứng; có validator kiểm tra docs ↔ thực tế |
-| UI mỗi trang một kiểu | Tokens trước, component dùng chung, spec cho table/form/detail/dashboard, reuse UI kit hiện có (Ant Design, shadcn…) |
+| AI jumps straight into a CRUD dashboard | 3 approval gates; no admin code until the module inventory is approved |
+| Invented modules unrelated to the business | Every module carries an evidence tag: `confirmed` / `implied` / `proposed` (needs your approval) |
+| Mandatory vs. domain-specific modules mixed up | 3 layers: **core** (every web needs it) → **foundation** (conditional) → **domain** (derived from the real business) |
+| Dashboards full of fake numbers | "Real or documented": no mock data, no fake success; missing backend goes into a gap list |
+| Permissions = hiding buttons | RBAC enforced on the server; tests prove the API returns 403 per role |
+| "Done" when the page merely renders | `done` only with a working workflow and evidence; a validator cross-checks docs against reality |
+| Every page styled differently | Tokens first, shared components, specs for table/form/detail/dashboard, reuse of your UI kit (Ant Design, shadcn…) |
+| Want to see the UI before the backend exists | **FE-first mode**: approve the UI on a guarded mock layer, then build the backend to a frozen API contract |
 
-## Bộ skill gồm gì
+## What's in the suite
 
-| Skill | Vai trò | Output |
+| Skill | Role | Output |
 |---|---|---|
-| `enterprise-admin-architect` | **Điều phối** (gọi cái này): nguyên tắc, 3 gate, resume | — |
-| `admin-discovery` | Phase 1: quét code, domain map, module inventory, backend gaps | `product-discovery.md`, `business-domain-map.md`, `module-inventory.md` |
-| `admin-information-architecture` | Phase 2-3: sidebar, route, drawer/page/modal, roles & permission matrix | `information-architecture.md`, `permission-matrix.md` |
-| `admin-design-system` | Phase 4: tokens, app shell, table/form/detail/dashboard, a11y, locale | `design-system.md` + shell + module mẫu |
-| `admin-module-builder` | Phase 5-7: spec → backend → UI → RBAC → audit → bảo mật | `module-specifications/*.md`, code, `implementation-status.md` |
-| `admin-qa-gate` | Phase 8: validator, test permission/workflow/state, báo cáo trung thực | `qa-report.md` |
+| `enterprise-admin-architect` | **Orchestrator** (call this one): principles, gates, resume | - |
+| `admin-discovery` | Phase 1: scan code, domain map, module inventory, backend gaps | `product-discovery.md`, `business-domain-map.md`, `module-inventory.md` |
+| `admin-information-architecture` | Phase 2-3: sidebar, routes, drawer/page/modal, roles & permission matrix | `information-architecture.md`, `permission-matrix.md` |
+| `admin-design-system` | Phase 4: tokens, app shell, table/form/detail/dashboard, a11y, locale | `design-system.md` + shell + a reference module |
+| `admin-module-builder` | Phase 5-7: spec → backend → UI → RBAC → audit → security | `module-specifications/*.md`, code, `implementation-status.md` |
+| `admin-qa-gate` | Phase 8: validator, permission/workflow/state tests, honest report | `qa-report.md` |
 
-Kèm theo:
-- `admin-discovery/scripts/scan-project.mjs` — quét project (stack, route, API, model, enum/status, admin có sẵn, role, form công khai, env **chỉ tên**), không cần cài dependency.
-- `admin-qa-gate/scripts/validate-admin-docs.mjs` — kiểm tra docs nhất quán (module ↔ permission ↔ route ↔ spec ↔ bằng chứng verify).
-- `admin-discovery/references/domains/` — 14 playbook domain (e-commerce, travel/booking, education, corporate, news, SaaS, marketplace, phòng khám, bất động sản, tuyển dụng, F&B, sự kiện/vé, cộng đồng/UGC, fintech/KYC) + playbook cho domain lạ (vd. xét nghiệm DNA).
-- `examples/e-commerce/` — ví dụ `docs/admin` đầy đủ, qua được validator.
+Also included:
+- `admin-discovery/scripts/scan-project.mjs` - scans a project (stack, routes, API, models, enums/status, existing admin, roles, public forms, env var **names only**). No dependencies.
+- `admin-qa-gate/scripts/validate-admin-docs.mjs` - checks docs consistency (module ↔ permission ↔ route ↔ spec ↔ verification evidence).
+- `admin-discovery/references/domains/` - 14 domain playbooks (e-commerce, travel/booking, education, corporate, news, SaaS, marketplace, clinic/appointments, real estate, job board, F&B, events/ticketing, community/UGC, fintech/KYC) plus a playbook for unusual domains (e.g. DNA testing).
+- `examples/e-commerce/` - a complete sample `docs/admin` that passes the validator.
 
-## Cài đặt
+## Install
 
-**Cách 1 - Plugin (khuyên dùng):**
+**Option 1 - Plugin (recommended):**
 ```
 /plugin marketplace add kat-minh/enterprise-admin-architect
 /plugin install enterprise-admin-architect@enterprise-admin-architect
 ```
+(Works for a private repo if your git/GitHub credentials have access.)
 
-**Cách 2 - Copy thủ công** (copy **cả 6 thư mục** trong `skills/`, vì các skill dùng chung nhau):
+**Option 2 - Manual copy** (copy **all 6 folders** in `skills/`; the skills share each other's files):
 ```powershell
-# Windows - cài cho 1 project
+# Windows - for one project
 Copy-Item -Recurse .\skills\* <your-project>\.claude\skills\
-# hoặc cài cho mọi project
+# or for every project
 Copy-Item -Recurse .\skills\* $HOME\.claude\skills\
 ```
 ```bash
 # macOS / Linux
-cp -r skills/* <your-project>/.claude/skills/     # hoặc ~/.claude/skills/
+cp -r skills/* <your-project>/.claude/skills/     # or ~/.claude/skills/
 ```
 
-Yêu cầu: Node ≥ 18 để chạy 2 script (không cần `npm install`).
+Requires Node ≥ 18 for the two scripts (no `npm install`).
 
-## Cách dùng (3 phiên làm việc)
+## Usage (3 working sessions)
 
-Sau khi code xong website chính, mở Claude Code trong project và gọi:
+Once your main website is built, open Claude Code in the project and run:
 
 ```
 /enterprise-admin-architect
 ```
 
-| Phiên | Làm gì | Gate bạn duyệt |
+| Session | What happens | Gate you approve |
 |---|---|---|
-| **1. Discovery & Architecture** | Đọc code + route + DB, lập domain map, danh sách module (core/foundation/domain, P0-P2), sidebar, roles, permission matrix, backend gaps, ≤ 7 câu hỏi kèm đề xuất mặc định | **Gate 1**: module nào build, role nào, thiếu backend gì |
-| **2. UI/UX & Design System** | Tokens, app shell, component dùng chung, dựng **1 module mẫu hoàn chỉnh** với data thật | **Gate 2**: duyệt look & feel, pattern tương tác |
-| **3. Implement & QA** | Build từng module (spec → API → UI → quyền → audit), kiểm thử sau mỗi module, báo cáo cuối | **Gate 3**: qa-report + danh sách việc còn lại |
+| **1. Discovery & Architecture** | Reads code + routes + DB, builds the domain map, module list (core/foundation/domain, P0-P2), sidebar, roles, permission matrix, backend gaps, ≤ 7 questions with recommended defaults | **Gate 1**: which modules, which roles, what backend is missing, delivery mode |
+| **2. UI/UX & Design System** | Tokens, app shell, shared components, **one complete reference module** | **Gate 2**: look & feel, interaction patterns |
+| **3. Implement & QA** | Builds each module (spec → API → UI → permissions → audit), verifies after each, final report | **Gate 3**: QA report + remaining work |
 
-### Chế độ FE-first (xem giao diện trước, duyệt xong mới làm backend)
+### FE-first mode (see the UI first, build the backend after approval)
 
-Ở Gate 1 bạn chọn **delivery mode**:
+At Gate 1 you choose the **delivery mode**:
 
-| Mode | Khi nào | Luồng |
+| Mode | When | Flow |
 |---|---|---|
-| `full-stack` | Repo đã có API/DB cho admin, hoặc backend nhỏ | Build từng module với API thật |
-| `fe-first` | Muốn **xem và duyệt UI trước**, hoặc backend P0 còn thiếu nhiều | Viết **API contract** → build toàn bộ UI trên **mock layer có kiểm soát** → **Gate 2b (FE Preview)** bạn click thử và góp ý → đóng băng contract → build backend theo contract → đổi mock → API từng module → QA |
+| `full-stack` | The repo already has the APIs/DB the admin needs, or the backend is small | Build each module against real APIs |
+| `fe-first` | You want to **see and approve the UI first**, or most P0 backend is missing | Write the **API contract** → build the whole UI on a **guarded mock layer** → **Gate 2b (FE Preview)**: you click through it and give feedback → freeze the contract → build the backend to it → swap mock → real per module → QA |
 
-Cách mock layer an toàn (chi tiết: `skills/admin-module-builder/references/fe-first-mock-layer.md`):
-- UI chỉ gọi **service interface**; mock và API thật cùng cài interface đó → đổi nguồn dữ liệu chỉ là 1 dòng, không phải làm lại UI.
-- Mock **giả lập như server thật**: phân trang/lọc/sắp xếp server-side, độ trễ, lỗi 422/403/409, state machine.
-- Luôn có banner **"Prototype data"**, role switcher (xem admin dưới góc nhìn từng role), nút bật các trạng thái empty/error/slow/forbidden.
-- **Chặn production** bằng biến môi trường triển khai (không dùng `NODE_ENV`, vì preview trên Vercel cũng là `production`) + check bundle; preview phải có bảo vệ truy cập và `noindex`.
-- Module chạy trên mock có trạng thái `prototype`, **không bao giờ được tính là `done`**; validator sẽ báo lỗi nếu `done` mà vẫn dùng mock, hoặc có module `prototype` mà thiếu `api-contract.md`.
+How the mock layer stays honest (details: `skills/admin-module-builder/references/fe-first-mock-layer.md`):
+- The UI calls only a **service interface**; the mock and the real API implement the same interface, so swapping is one line and no UI is thrown away.
+- The mock **behaves like a real server**: server-side pagination/filter/sort, latency, 422/403/409 errors, state machines.
+- Every page shows a **"Prototype data"** banner; a role switcher previews the admin as each role; toggles force empty/error/slow/forbidden states.
+- **Blocked in production** by a deployment-environment variable (not `NODE_ENV`, because Vercel preview builds also run with `NODE_ENV=production`) plus a bundle check; previews must be access-protected and `noindex`.
+- Mock-backed modules have status `prototype` and can **never** be `done`. The validator fails if a `done` module still uses mock data, or a `prototype` module has no `api-contract.md`.
 
-Một số câu nói tự nhiên cũng kích hoạt đúng skill:
-- "Phân tích web này rồi liệt kê module admin cần có" → `admin-discovery`
-- "Thiết kế lại menu và phân quyền cho admin" → `admin-information-architecture`
-- "Implement module Orders trong admin" → `admin-module-builder`
-- "QA lại admin, kiểm tra quyền" → `admin-qa-gate`
-- Muốn chạy nhanh: "làm luôn, đừng hỏi nhiều" → skill vẫn phân tích gọn, ghi assumptions và **không bỏ qua** phân quyền server-side, audit log, verify.
+### Natural-language triggers
+- "Analyse this site and list the admin modules it needs" → `admin-discovery`
+- "Redesign the admin menu and permissions" → `admin-information-architecture`
+- "Implement the Orders module in the admin" → `admin-module-builder`
+- "QA the admin, check permissions" → `admin-qa-gate`
+- "Just build it, don't ask much" → still a compact analysis with written assumptions; server-side permissions, audit logging and verification are **never skipped**.
 
-Dùng script thủ công:
+Run the scripts manually:
 ```bash
 node skills/admin-discovery/scripts/scan-project.mjs <project> --md
 node skills/admin-qa-gate/scripts/validate-admin-docs.mjs --root <project> --stage build
 ```
 
-## Tài liệu sinh ra trong project của bạn
+## Documents generated in your project
 
 ```
 docs/admin/
   product-discovery.md   business-domain-map.md   module-inventory.md
   information-architecture.md   permission-matrix.md   design-system.md
   module-specifications/<module-id>.md
-  api-contract.md            (bắt buộc ở chế độ fe-first)
+  api-contract.md            (required in fe-first mode)
   implementation-status.md   qa-report.md
 ```
-`module-inventory.md` là **nguồn sự thật duy nhất** về trạng thái module; `implementation-status.md` ghi bằng chứng verify.
+`module-inventory.md` is the **single source of truth** for module status; `implementation-status.md` holds the verification evidence.
 
-## Ba lớp module
+**Language:** Claude replies and writes the free-text content in your language, but keeps section headings, table column headers and enum values (`core`, `P0`, `in-progress`…) in English exactly as in the templates - the validator checks them.
 
-- **core** (bắt buộc cho mọi web): auth & session, RBAC, dashboard theo nghiệp vụ, admin accounts, audit log, settings, my account/security.
-- **foundation** (có điều kiện áp dụng, phải ghi lý do nếu loại): users/customers, notifications, media, import/export, trash, **site content** (menu/banner/trang tĩnh/SEO/redirect), **leads inbox** (form liên hệ), templates, jobs monitor, search/command, localization…
-- **domain** (sinh từ website): Orders, Bookings, Courses, Articles, Organizations… hoặc module riêng cho nghiệp vụ lạ.
+## Three module layers
 
-## Mở rộng
+- **core** (mandatory for every web): auth & sessions, RBAC, domain-aware dashboard, admin accounts, audit log, settings, my account/security.
+- **foundation** (conditional, exclusion needs a stated reason): users/customers, notifications, media, import/export, trash, **site content** (menus/banners/static pages/SEO/redirects), **leads inbox** (contact forms), templates, jobs monitor, search/command menu, localization…
+- **domain** (derived from your website): Orders, Bookings, Courses, Articles, Organizations… or modules for an unusual business.
 
-- Thêm domain: tạo `skills/admin-discovery/references/domains/<ten>.md` theo cấu trúc các file sẵn có và thêm một dòng vào `_index.md`.
-- Thêm stack UI: bổ sung mục vào `skills/admin-design-system/references/stack-adapters.md`.
-- Mỗi `SKILL.md` giữ ngắn; chi tiết nằm trong `references/` (chỉ nạp khi cần).
+## Status & known limitations
 
-## So với bản nháp ban đầu (chat GPT)
+- **Not yet field-tested end-to-end on a real project.** Tested so far: the scanner on synthetic fixtures (Next.js/Prisma/Drizzle/SQL/Express/Mongoose/TypeORM/NestJS/Django/Laravel/Remix), the docs validator on a sample and on deliberately broken docs, and `claude plugin validate`.
+- The scanner is regex-based: a **map, not truth**. Unusual frameworks/monorepos may be missed; the skill is told to verify by reading files.
+- Approval gates are instructions to Claude, not hard locks.
+- Stack adapters (Ant Design, shadcn, MUI…) name typical APIs; verify against your installed versions.
+- Script paths between skills assume the `admin-*` folders are siblings (true for both install options).
 
-Giữ nguyên ý tưởng gốc (discovery trước, universal vs domain, enterprise UX, 3 phiên làm việc), đồng thời:
-1. **Tách một file ~600 dòng thành 6 skill + references** (nạp theo nhu cầu, đỡ tốn context).
-2. **Giải mâu thuẫn** "tự khám phá năng lực còn thiếu" vs "không bịa chức năng" bằng nhãn `confirmed/implied/proposed`.
-3. **Phân tầng rõ** core bắt buộc / foundation có điều kiện / domain — bản gốc để tất cả ở dạng "nếu phù hợp".
-4. **Bổ sung** module hay bị bỏ sót: site content, leads inbox, notifications templates, jobs/integration health, my account/security.
-5. **Thêm gate duyệt, resume protocol, fast path, scale theo cỡ website.**
-6. **Công cụ thật**: scanner project + validator docs (docs nói `done` mà thiếu bằng chứng thì fail).
-7. **Bảo mật & an toàn dữ liệu cụ thể**: IDOR, mass-assignment, CSV-injection, upload, impersonation, optimistic concurrency, idempotency, audit append-only.
-8. **QA có thể chạy được**: ma trận role × permission test trực tiếp API, test scale, regression site công khai.
-9. **Locale Việt Nam**: VND, múi giờ, tìm kiếm không dấu, font tiếng Việt.
+Feedback from real runs is the most valuable input - especially domain detection and the sidebar grouping.
+
+## Extending
+
+- New domain: add `skills/admin-discovery/references/domains/<name>.md` following the existing files, and one line in `_index.md`.
+- New UI stack: add a section to `skills/admin-design-system/references/stack-adapters.md`.
+- Keep each `SKILL.md` short; put detail in `references/` (loaded only when needed).
+
+## Versus the original draft (ChatGPT chat)
+
+The original ideas are kept (discovery first, universal vs. domain modules, enterprise UX, 3 working sessions). Changes:
+1. One ~600-line prompt split into 6 skills + references (loaded on demand, less context).
+2. The "discover missing capabilities" vs. "don't invent features" conflict resolved with `confirmed/implied/proposed` tags.
+3. Clear layering core / foundation / domain (the draft listed everything as "where appropriate").
+4. Added commonly missed modules: site content, leads inbox, message templates, jobs/integration health, my account/security.
+5. Approval gates, resume protocol, fast path, scaling by site size, FE-first mode.
+6. Real tooling: project scanner + docs validator (a `done` module without evidence fails).
+7. Concrete security and data-safety rules: IDOR, mass assignment, CSV injection, uploads, impersonation, optimistic concurrency, idempotency, append-only audit.
+8. Runnable QA: role × permission matrix against the API, scale test, public-site regression.
+9. Vietnam-aware: VND, timezone, accent-insensitive search, Vietnamese-capable fonts.
 
 ## License
 

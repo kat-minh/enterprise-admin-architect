@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1 - 2026-11-20
+
+- Docs: bilingual README (`README.md` English, `README.vi.md` Vietnamese) with a status/known-limitations section.
+- Fix (scanner): TypeORM entities with same-line decorators read as 0 fields; Django models at end of file were skipped (the `\Z` anchor does not exist in JS regex); added Remix / React Router v7 file routes; de-duplicated role-model list.
+- Fix (design): the language rule now keeps section headings, table headers and enum values in English so the validator still passes when docs are written in Vietnamese.
+- Add: namespaced skill names note for plugin installs; "Existing admin audit" step and template section (extend/audit mode).
+- Example: marked illustrative evidence as invented.
+
 ## 1.1.0 - 2026-11-20
 
 - **FE-first delivery mode**: build and approve the admin UI on a typed mock data layer before any backend, then build the backend to a frozen API contract.

@@ -320,6 +320,13 @@ for (const f of FILES) {
     pageRoutes.push({ route: route === '' ? '/' : route, file: f, router: m[2] === 'vue' ? 'nuxt-pages' : 'pages', groups: [] });
     continue;
   }
+  // Remix / React Router v7 flat file routes (only when the dependency is present, to avoid clashing with Next.js `app/`)
+  m = f.match(/(?:^|\/)app\/routes\/([^/]+)\.(?:tsx|jsx|ts|js)$/);
+  if (m && (deps['@remix-run/react'] || deps['@react-router/dev'] || deps['@react-router/node'])) {
+    const segs = m[1].split('.').filter((s) => !/^_[^i]|^_$/.test(s) || s === '_index').map((s) => (s === '_index' ? '' : s.startsWith('$') ? ':' + s.slice(1) : s.replace(/^\(|\)$/g, '')));
+    pageRoutes.push({ route: '/' + segs.filter(Boolean).join('/'), file: f, router: 'remix', groups: [] });
+    continue;
+  }
   // SvelteKit
   m = f.match(/(?:^|\/)routes\/(.*?)\/?\+page\.svelte$/);
   if (m !== null) { pageRoutes.push({ route: '/' + (m[1] || ''), file: f, router: 'sveltekit', groups: [] }); continue; }
@@ -495,7 +502,9 @@ for (const f of filesMatching(/\.(ts)$/)) {
     const openIdx = m.index + m[0].length - 1;
     const close = matchBrace(src, openIdx);
     const body = close > 0 ? src.slice(openIdx + 1, close) : '';
-    const fields = [...body.matchAll(/^\s*(\w+)[!?]?:\s*([\w\[\]<>| .]+?);/gm)].map((x) => ({ name: x[1], type: x[2].trim() }));
+    // decorators may sit on the same line as the property: `@Column() status: string;`
+    const bodyNoDecorators = body.replace(/@\w+\((?:[^()]|\([^()]*\))*\)/g, ' ');
+    const fields = [...bodyNoDecorators.matchAll(/(?:^|[\s;{])(?:public\s+|private\s+|protected\s+|readonly\s+)*(\w+)[!?]?:\s*([\w\[\]<>| .]+?);/g)].map((x) => ({ name: x[1], type: x[2].trim() }));
     const rels = [...body.matchAll(/@(ManyToOne|OneToMany|ManyToMany|OneToOne)\(\s*\(\)\s*=>\s*(\w+)/g)].map((x) => ({ field: x[1], to: x[2], list: /ToMany/.test(x[1]) }));
     models.push({ name: m[1], source: 'typeorm', file: f, fieldCount: fields.length, fields: cap(fields, 45), relations: rels, flags: modelFlags(fields.map((x) => x.name)) });
   }
@@ -543,7 +552,7 @@ models.push(...sqlTables.values());
 // Django models
 for (const f of filesMatching(/(^|\/)models(\/[\w]+)?\.py$/)) {
   const src = read(f);
-  for (const m of src.matchAll(/^class\s+(\w+)\((?:[\w.]*Model|models\.Model)\)\s*:([\s\S]*?)(?=^class\s|\Z)/gm)) {
+  for (const m of src.matchAll(/^class\s+(\w+)\((?:[\w.]*Model|models\.Model)\)\s*:([\s\S]*?)(?=^class\s|(?![\s\S]))/gm)) {
     const fields = [...m[2].matchAll(/^\s+(\w+)\s*=\s*models\.(\w+)\(/gm)].map((x) => ({ name: x[1], type: x[2] }));
     const rels = [...m[2].matchAll(/^\s+(\w+)\s*=\s*models\.(ForeignKey|OneToOneField|ManyToManyField)\(\s*['"]?([\w.]+)/gm)].map((x) => ({ field: x[1], to: x[3], list: x[2] === 'ManyToManyField' }));
     models.push({ name: m[1], source: 'django', file: f, fieldCount: fields.length, fields: cap(fields, 45), relations: rels, flags: modelFlags(fields.map((x) => x.name)) });
@@ -609,7 +618,7 @@ for (const e of enums) if (/role/i.test(e.name)) for (const v of e.values) roleV
 
 const authFiles = FILES.filter((f) => /(^|\/)(auth|session|lib\/auth|utils\/auth)\.(ts|js|tsx)$|\[\.\.\.nextauth\]|auth\.config\.|(^|\/)(middleware|proxy)\.(ts|js)$/i.test(f)).filter((f) => !/node_modules/.test(f));
 const middlewareFiles = FILES.filter((f) => /(^|\/)(middleware|proxy)\.(ts|js)$/.test(f));
-const roleModels = modelsDedup.filter((m) => m.flags.role).map((m) => m.name);
+const roleModels = uniq(modelsDedup.filter((m) => m.flags.role).map((m) => m.name));
 const loginPages = pageRoutes.filter((r) => /\/(login|signin|sign-in|register|signup|sign-up)(\/|$)/i.test(r.route)).map((r) => r.route);
 
 // ----------------------------------------------------------------------------
