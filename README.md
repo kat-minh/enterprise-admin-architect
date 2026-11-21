@@ -22,6 +22,20 @@ The skills enforce the right order: **analyse the website → design the admin a
 ```
 Using another AI tool? See [Install](#install). Prefer to see the result first? Browse [`examples/e-commerce/docs/admin`](examples/e-commerce/docs/admin).
 
+## What it built
+
+Screenshots from the build the suite was proven on: a back office for a real consumer app, with seeded demo data (no real users). The interface is in Vietnamese because that app is; the structure is what matters. Your admin will use your own design system and modules.
+
+| Role-based dashboard: tasks first, figures with previous-period comparison, definitions behind every ⓘ | Editable roles on a fixed permission catalogue; sensitive permissions are marked |
+|---|---|
+| ![Dashboard with tasks that need attention and key figures compared with the previous period](docs/assets/screens/dashboard.png) | ![Roles page: four role cards and a role by permission matrix](docs/assets/screens/roles-matrix.png) |
+
+| Editing a role: the change is a diff, applied with a reason and written to the audit log | Site content (CMS): draft, preview, publish, version history, rollback |
+|---|---|
+| ![Editing a role's permissions with a pending-change summary](docs/assets/screens/role-editing.png) | ![Content page showing the running version, its history and a reset option](docs/assets/screens/content-publish-history.png) |
+
+<p align="center"><img src="docs/assets/screens/dashboard-phone.png" alt="The same dashboard at phone width (390 px)" width="260"><br><sub>The same dashboard at 390 px. The UI audit checks every page at phone, tablet and desktop widths, in light and dark.</sub></p>
+
 ## What you get
 
 Excerpt from the sample output in [`examples/e-commerce`](examples/e-commerce/docs/admin) (illustrative project):

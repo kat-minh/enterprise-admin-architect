@@ -22,6 +22,20 @@ Bộ skill buộc quy trình đúng thứ tự: **phân tích website → thiế
 ```
 Dùng công cụ AI khác? Xem [Cài đặt](#cài-đặt). Muốn xem kết quả trước? Mở [`examples/e-commerce/docs/admin`](examples/e-commerce/docs/admin).
 
+## Nó đã xây ra những gì
+
+Ảnh chụp từ bản dựng dùng để kiểm chứng bộ skill: một back office cho một app thật, dùng dữ liệu mẫu (không có người dùng thật). Giao diện bằng tiếng Việt vì app đó là tiếng Việt; điều đáng xem là cấu trúc. Admin của bạn sẽ dùng design system và module của riêng bạn.
+
+| Dashboard theo vai trò: việc cần xử lý trước, số liệu có so sánh kỳ trước, định nghĩa sau mỗi dấu ⓘ | Vai trò sửa được trên danh mục quyền cố định; quyền nhạy cảm được đánh dấu |
+|---|---|
+| ![Dashboard với các việc cần xử lý và chỉ số chính so với kỳ trước](docs/assets/screens/dashboard.png) | ![Trang vai trò: bốn thẻ vai trò và ma trận vai trò theo quyền](docs/assets/screens/roles-matrix.png) |
+
+| Sửa một vai trò: thay đổi hiện thành bản so sánh, áp dụng kèm lý do và ghi vào nhật ký audit | Nội dung giao diện (CMS): bản nháp, xem thử, xuất bản, lịch sử phiên bản, hoàn tác |
+|---|---|
+| ![Sửa quyền của một vai trò với phần tóm tắt thay đổi chờ áp dụng](docs/assets/screens/role-editing.png) | ![Trang nội dung hiển thị phiên bản đang chạy, lịch sử và nút về chữ gốc](docs/assets/screens/content-publish-history.png) |
+
+<p align="center"><img src="docs/assets/screens/dashboard-phone.png" alt="Cùng dashboard ở độ rộng điện thoại (390 px)" width="260"><br><sub>Cùng dashboard ở 390 px. UI audit kiểm tra mọi trang ở độ rộng điện thoại, máy tính bảng và desktop, sáng và tối.</sub></p>
+
 ## Bạn nhận được gì
 
 Trích từ output mẫu trong [`examples/e-commerce`](examples/e-commerce/docs/admin) (project minh hoạ):
