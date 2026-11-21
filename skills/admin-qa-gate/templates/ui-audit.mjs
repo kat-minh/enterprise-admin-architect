@@ -76,7 +76,8 @@ const { chromium } = require('playwright')
 const AXE = require.resolve('axe-core/axe.min.js')
 fs.mkdirSync(CONFIG.outDir, { recursive: true })
 
-function measure(isPhone, ignoreSelector) {
+// runs in the page: Playwright hands it exactly one argument, so the two values travel as an object
+function measure({ isPhone, ignoreSelector }) {
   const sel = (el) => {
     const id = el.id ? `#${el.id}` : ''
     const cls = typeof el.className === 'string' && el.className ? '.' + el.className.trim().split(/\s+/).slice(0, 2).join('.') : ''
@@ -167,14 +168,15 @@ for (const roleName of roleNames) {
       if (ov) {
         try {
           await ov.open(page)
-          // an overlay still fading in is blended with what is behind it: axe would report contrast failures that are not real
-          await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))))
-          await page.waitForTimeout(150)
         } catch (e) {
           openError = String(e.message).split('\n')[0]
         }
+        // an overlay still fading in is blended with what is behind it: axe would report contrast failures that are not real.
+        // Wait for every animation to finish even when `open` threw (the overlay may be half open)
+        await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))))
+        await page.waitForTimeout(150)
       }
-      const m = await page.evaluate(measure, st.w < 600, CONFIG.ignoreClipped)
+      const m = await page.evaluate(measure, { isPhone: st.w < 600, ignoreSelector: CONFIG.ignoreClipped })
       await page.addScriptTag({ path: AXE })
       const axe = await page.evaluate(async () => {
         const r = await window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'] } })

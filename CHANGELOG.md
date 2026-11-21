@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.6.2 - 2026-11-21
+
+The two templates added in 1.5.0 and 1.6.0 were run **as templates** for the first time: copied into the proving project and their CONFIG filled in, the way the skill tells a user to, instead of run from the scripts they were ported from.
+
+- **`admin-qa-gate/templates/ui-audit.mjs` fixed:** `page.evaluate` was given two arguments, which Playwright refuses ("Too many arguments"), so the template shipped since 1.5.0 failed on its first page for anyone who used it; the two values now travel as one object. Also, when an overlay's `open` step threw, the animations were not awaited before the checks and axe reported contrast failures on a half-faded overlay; they are now always awaited.
+- **Verified by running them:** the audit template over 30 states (2 roles, 3 pages and 3 overlays each, 3 widths and themes): 0 `must`, 30 clean. The performance template reproduced the project script's figures (same JavaScript sizes, LCP within a few percent).
+- **A figure corrected:** the phone dashboard's layout shift varies between 0.09 and 0.11 from run to run (0.109 in a single run of the template). The "CLS up to 0.09" of 1.6.0 was the median of three runs, not a ceiling; the budget is 0.1 and this page sits on it.
+- **New rule in `AGENTS.md`:** a template is not released until it has been run as a template (copied into a project, CONFIG filled), because a port of a script that ran proves nothing about the template.
+
 ## 1.6.1 - 2026-11-21
 
 A check of whether the skills wake up for the way people really ask, with `claude plugin eval`.
