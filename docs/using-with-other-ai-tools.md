@@ -14,7 +14,7 @@ The suite is plain Markdown plus two dependency-free Node scripts. Nothing in th
 
 ### Level 1 - Skills folder
 
-Copy **all six** folders from `skills/` into your tool's skills directory (project-level or user-level). They reference each other, so install them together. Then ask:
+Copy **every** folder from `skills/` into your tool's skills directory (project-level or user-level). They reference each other, so install them together. Then ask:
 
 > Build the admin system for this project. Follow the `enterprise-admin-architect` skill.
 

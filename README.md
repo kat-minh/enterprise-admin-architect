@@ -97,13 +97,13 @@ Both scripts are dependency-free Node (>= 18) and make no network requests.
 | You use | How |
 |---|---|
 | **Claude Code** | Plugin: `/plugin marketplace add kat-minh/enterprise-admin-architect` then `/plugin install enterprise-admin-architect@enterprise-admin-architect` |
-| A tool that supports **Agent Skills** (`SKILL.md`) | Copy all six folders from `skills/` into the tool's skills directory (project or user level) |
+| A tool that supports **Agent Skills** (`SKILL.md`) | Copy every folder from `skills/` into the tool's skills directory (project or user level) |
 | A tool that reads an **instruction file** (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, Cursor rules…) | Keep `skills/` in the repo and add a short pointer to the orchestrator |
 | A **chat-only** assistant | `node scripts/bundle.mjs <phase> --out bundle.md`, then paste one phase per conversation |
 
 Details, snippets and caveats: [docs/using-with-other-ai-tools.md](docs/using-with-other-ai-tools.md).
 
-Manual copy for any skills-capable tool (copy **all six** folders; they reference each other):
+Manual copy for any skills-capable tool (copy **every** folder; they reference each other):
 ```bash
 cp -r skills/* <your-project>/.claude/skills/      # or your tool's skills directory
 ```

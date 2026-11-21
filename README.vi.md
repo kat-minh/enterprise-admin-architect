@@ -44,6 +44,19 @@ Settings & Access   Admin Users · Roles & Permissions · Audit Log · Settings
 
 Kèm ma trận role × quyền (ví dụ `orders.refund` chỉ dành cho Finance), spec từng module, design system và báo cáo QA ghi lại những gì thực sự đã được kiểm chứng.
 
+## Đã chứng minh, không chỉ hứa
+
+Bộ skill được kiểm chứng bằng cách dùng chính nó để xây một admin full-stack (backend, app admin riêng, app công khai giữ nguyên) cho một app web thật, trên bản sao của dự án và một database dùng tạm. Kết quả của lần chạy đó, và những gì các gate đã bắt được:
+
+- **Phân quyền ở server, test theo từng vai trò:** ma trận vai trò × endpoint chạy trực tiếp vào API (403 khi không được phép, không chỉ ẩn nút); tài liệu ma trận được đọc lúc chạy làm chuẩn đối chiếu.
+- **Số liệu dashboard được kiểm tra độc lập:** mỗi chỉ số được tính lại từ dữ liệu thô bằng code thường rồi so sánh cho 7, 30 và 90 ngày, gồm cả các dòng nằm sát ranh giới ngày theo múi giờ của doanh nghiệp.
+- **UI audit trước khi chủ sản phẩm phải chỉ từng lỗi:** mọi trang × vai trò × điện thoại / máy tính bảng / desktop × sáng / tối; nó đã tìm ra thanh cuộn thứ hai, chữ bị cắt, lỗi tương phản, popover tràn khỏi thẻ, và một widget gọi dữ liệu mà vai trò đó không được xem.
+- **Dữ liệu lớn:** 200.000 người dùng và 400.000 chuyến đi; các endpoint danh sách từ 1,5-8 giây xuống dưới một giây sau khi áp dụng công thức trong QA playbook.
+- **App công khai không bị đụng tới** ngoài phần cố ý sửa; việc chỉnh chữ, banner và màu thương hiệu trong admin được kiểm chứng trên app công khai thật (bản nháp không lộ, xem trước, xuất bản, hoàn tác, endpoint ngừng hoạt động).
+- **Công việc của agent con được chạy lại trên stack riêng** trước khi được tin.
+
+Phần nào mới chỉ là hướng dẫn và phần nào cố ý bỏ ngoài được liệt kê trong [`docs/coverage-map.md`](docs/coverage-map.md) (tiếng Anh).
+
 ## Vì sao cần bộ skill này
 
 | Vấn đề thường gặp | Cách bộ skill xử lý |
@@ -84,13 +97,13 @@ Hai script đều là Node thuần (>= 18), không có dependency và không g�
 | Bạn dùng | Cách cài |
 |---|---|
 | **Claude Code** | Plugin: `/plugin marketplace add kat-minh/enterprise-admin-architect` rồi `/plugin install enterprise-admin-architect@enterprise-admin-architect` |
-| Công cụ hỗ trợ **Agent Skills** (`SKILL.md`) | Copy cả sáu thư mục trong `skills/` vào thư mục skills của công cụ (cấp project hoặc cấp người dùng) |
+| Công cụ hỗ trợ **Agent Skills** (`SKILL.md`) | Copy mọi thư mục trong `skills/` vào thư mục skills của công cụ (cấp project hoặc cấp người dùng) |
 | Công cụ đọc **file chỉ dẫn** (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, Cursor rules…) | Để `skills/` trong repo và thêm một đoạn trỏ tới skill điều phối |
 | Trợ lý **chỉ có chat** | `node scripts/bundle.mjs <phase> --out bundle.md`, rồi dán từng phase vào từng cuộc hội thoại |
 
 Chi tiết, đoạn mẫu và lưu ý: [docs/using-with-other-ai-tools.md](docs/using-with-other-ai-tools.md) (tiếng Anh).
 
-Copy thủ công cho công cụ hỗ trợ skills (copy **cả sáu** thư mục vì chúng tham chiếu lẫn nhau):
+Copy thủ công cho công cụ hỗ trợ skills (copy **mọi** thư mục vì chúng tham chiếu lẫn nhau):
 ```bash
 cp -r skills/* <your-project>/.claude/skills/      # hoặc thư mục skills của công cụ bạn dùng
 ```
