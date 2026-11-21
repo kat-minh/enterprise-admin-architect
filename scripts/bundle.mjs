@@ -31,6 +31,7 @@ const PHASES = {
 // the standalone audit skill points at files that live in other skills; a chat-only assistant needs them inlined
 const UI_AUDIT_FILES = [
   ['admin-qa-gate', 'templates/ui-audit.mjs'],
+  ['admin-qa-gate', 'templates/perf-frontend.mjs'],
   ['admin-qa-gate', 'references/quality-gates.md'],
   ['admin-qa-gate', 'references/e2e-test-playbook.md'],
   ['admin-design-system', 'references/visual-standard.md'],

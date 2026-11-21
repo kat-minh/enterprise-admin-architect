@@ -34,7 +34,9 @@ Dùng công cụ AI khác? Xem [Cài đặt](#cài-đặt). Muốn xem kết qu�
 |---|---|
 | ![Sửa quyền của một vai trò với phần tóm tắt thay đổi chờ áp dụng](docs/assets/screens/role-editing.png) | ![Trang nội dung hiển thị phiên bản đang chạy, lịch sử và nút về chữ gốc](docs/assets/screens/content-publish-history.png) |
 
-<p align="center"><img src="docs/assets/screens/dashboard-phone.png" alt="Cùng dashboard ở độ rộng điện thoại (390 px)" width="260"><br><sub>Cùng dashboard ở 390 px. UI audit kiểm tra mọi trang ở độ rộng điện thoại, máy tính bảng và desktop, sáng và tối.</sub></p>
+| Menu lệnh (Ctrl/⌘+K): nhảy trang hoặc tìm trong một danh sách; chỉ hiện những gì vai trò được mở và tìm không phân biệt dấu | Cùng dashboard ở 390 px; UI audit kiểm tra mọi trang và mọi lớp phủ đang mở ở độ rộng điện thoại, máy tính bảng, desktop, sáng và tối |
+|---|---|
+| ![Menu lệnh liệt kê trang gần đây, các trang kèm phím tắt và các hành động](docs/assets/screens/command-menu.png) | <img src="docs/assets/screens/dashboard-phone.png" alt="Dashboard ở độ rộng điện thoại (390 px)" width="220"> |
 
 ## Bạn nhận được gì
 
@@ -64,7 +66,9 @@ Bộ skill được kiểm chứng bằng cách dùng chính nó để xây mộ
 
 - **Phân quyền ở server, test theo từng vai trò:** ma trận vai trò × endpoint chạy trực tiếp vào API (403 khi không được phép, không chỉ ẩn nút); tài liệu ma trận được đọc lúc chạy làm chuẩn đối chiếu.
 - **Số liệu dashboard được kiểm tra độc lập:** mỗi chỉ số được tính lại từ dữ liệu thô bằng code thường rồi so sánh cho 7, 30 và 90 ngày, gồm cả các dòng nằm sát ranh giới ngày theo múi giờ của doanh nghiệp.
-- **UI audit trước khi chủ sản phẩm phải chỉ từng lỗi:** mọi trang × vai trò × điện thoại / máy tính bảng / desktop × sáng / tối; nó đã tìm ra thanh cuộn thứ hai, chữ bị cắt, lỗi tương phản, popover tràn khỏi thẻ, và một widget gọi dữ liệu mà vai trò đó không được xem.
+- **UI audit trước khi chủ sản phẩm phải chỉ từng lỗi:** mọi trang và mọi lớp phủ đang mở × vai trò × điện thoại / máy tính bảng / desktop × sáng / tối (350 trạng thái trong bản dựng kiểm chứng); nó đã tìm ra thanh cuộn thứ hai, chữ bị cắt, lỗi tương phản, popover tràn khỏi thẻ, popover nằm ngoài màn hình, một nút có tên truy cập không khớp nhãn trên mọi trang, và một widget gọi dữ liệu mà vai trò đó không được xem.
+- **Back office dùng được bằng bàn phím:** menu lệnh (Ctrl/⌘+K) và phím tắt chỉ hiện những gì vai trò được mở, chuông trên thanh đầu trang hiện đúng các việc như dashboard, ẩn cột và bộ lọc đã lưu theo từng admin, hoàn tác khi thao tác có nghịch đảo chính xác. Kiểm thử theo từng vai trò, có axe cả sáng và tối.
+- **Ngân sách front-end được đo thật:** bản build production theo từng route với hồ sơ điện thoại (CPU chậm 4 lần, 1,6 Mbps): 107-122 KB JavaScript, LCP tối đa 2,2 giây, tương tác dưới 100 ms. Hai trang danh sách vượt ngân sách thời gian chặn (khoảng 218 ms so với 200) và báo cáo QA nói rõ điều đó.
 - **Dữ liệu lớn:** 200.000 người dùng và 400.000 chuyến đi; các endpoint danh sách từ 1,5-8 giây xuống dưới một giây sau khi áp dụng công thức trong QA playbook.
 - **App công khai không bị đụng tới** ngoài phần cố ý sửa; việc chỉnh chữ, banner và màu thương hiệu trong admin được kiểm chứng trên app công khai thật (bản nháp không lộ, xem trước, xuất bản, hoàn tác, endpoint ngừng hoạt động).
 - **Công việc của agent con được chạy lại trên stack riêng** trước khi được tin.

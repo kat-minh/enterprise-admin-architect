@@ -126,7 +126,7 @@ Before showing a dashboard to the owner, answer these by looking at the screensh
 
 ## States
 
-Per-widget independent loading skeletons, empty states ("No pending orders - all caught up" is a good state), and error states with retry; one failing widget must not break the page.
+Per-widget independent loading skeletons, empty states ("No pending orders - all caught up" is a good state), and error states with retry; one failing widget must not break the page. Skeleton tiles reserve about the height of the loaded tiles, and the header sentence that carries the date range has its final length from the first paint (see "Layout stability" in `frontend-architecture.md`); a dashboard that jumps when its figures arrive fails the layout-shift gate.
 
 ## Acceptance checklist
 

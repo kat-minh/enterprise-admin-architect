@@ -12,6 +12,9 @@
  *   - axe-core (WCAG 2.1 A + AA + best practice): contrast, accessible names and labels, landmarks, headings, ARIA,
  *     scrollable regions that keyboard users cannot reach
  *   - console errors, uncaught exceptions, failed API calls
+ *   - OVERLAYS (CONFIG.overlays): command menu, bell and filter popovers, dialogs, drawers are opened and audited like pages, plus their
+ *     geometry (inside the viewport, not squeezed). Pages alone miss them: a popover whose class name collided with older CSS was
+ *     squeezed into columns while every page-level check passed.
  * It writes a full-height screenshot per state and a JSON report, and prints findings grouped by kind.
  *
  * The audit does not replace LOOKING. After it is clean, open the screenshots (all pages, phone and desktop, both themes)
@@ -48,6 +51,16 @@ const CONFIG = {
   loaded: () => document.querySelectorAll('[aria-busy="true"], .skeleton, .ad-skel').length === 0,
   /** elements whose clipping is intentional (screen-reader-only text) */
   ignoreClipped: '.sr-only, .ad-sr, [class*="visually-hidden"]',
+  /**
+   * Overlays to audit. `route` is the page to load, `when(role)` says which roles have the overlay, `open(page)` opens it and resolves when it is
+   * visible, `selector` is the overlay itself, `minWidth` the narrowest it may be before it counts as squeezed. Add one entry per overlay.
+   */
+  overlays: [
+    // {
+    //   name: 'command-menu', route: '/dashboard', when: () => true, selector: '[role="dialog"]', minWidth: 300,
+    //   async open(page) { await page.keyboard.press('Control+K'); await page.getByRole('combobox').waitFor() },
+    // },
+  ],
   states: [
     { w: 1440, h: 900, scheme: 'light' },
     { w: 1440, h: 900, scheme: 'dark' },
@@ -136,10 +149,13 @@ for (const roleName of roleNames) {
     continue
   }
   const ids = await CONFIG.ids(page, roleName)
-  for (const route of role.pages) {
+  const items = [...role.pages.map((route) => ({ route })), ...CONFIG.overlays.filter((o) => o.when(role)).map((o) => ({ route: o.route, overlay: o }))]
+  for (const item of items) {
+    const route = item.route
+    const ov = item.overlay
     const url = route.replace(/:(\w+)/g, (_, k) => ids[k] ?? k)
     for (const st of CONFIG.states) {
-      const label = `${roleName} ${route} ${st.w}${st.scheme === 'dark' ? ' dark' : ''}`
+      const label = `${roleName} ${route}${ov ? ` [${ov.name}]` : ''} ${st.w}${st.scheme === 'dark' ? ' dark' : ''}`
       problems.console.length = 0
       problems.api.length = 0
       await page.setViewportSize({ width: st.w, height: st.h })
@@ -147,22 +163,45 @@ for (const roleName of roleNames) {
       await page.goto(CONFIG.appUrl + url)
       try { await page.waitForFunction(CONFIG.loaded, null, { timeout: 15000 }) } catch { /* the page never settled: visible in the screenshot */ }
       await page.waitForTimeout(600)
+      let openError = null
+      if (ov) {
+        try {
+          await ov.open(page)
+          // an overlay still fading in is blended with what is behind it: axe would report contrast failures that are not real
+          await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))))
+          await page.waitForTimeout(150)
+        } catch (e) {
+          openError = String(e.message).split('\n')[0]
+        }
+      }
       const m = await page.evaluate(measure, st.w < 600, CONFIG.ignoreClipped)
       await page.addScriptTag({ path: AXE })
       const axe = await page.evaluate(async () => {
         const r = await window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'] } })
         return r.violations.map((v) => ({ id: v.id, impact: v.impact, help: v.help, n: v.nodes.length, target: v.nodes[0]?.target?.join(' ').slice(0, 90) }))
       })
-      // full-height screenshot: grow the viewport to the content so an inner scroll region is fully visible
-      const full = await page.evaluate(() => {
-        const main = document.querySelector('main')
-        return main ? main.scrollHeight + (main.getBoundingClientRect().top || 0) : document.scrollingElement.scrollHeight
-      })
-      await page.setViewportSize({ width: st.w, height: Math.min(Math.max(st.h, full + 8), 3200) })
-      await page.waitForTimeout(250)
-      const file = `${roleName}__${route.replace(/[/:]/g, '_').replace(/^_/, '')}__${st.w}-${st.scheme}.png`
+      let box = null
+      if (ov && !openError) box = await page.locator(ov.selector).first().boundingBox()
+      // full-height screenshot of a page: grow the viewport to the content so an inner scroll region is fully visible (an overlay is shot as it is on screen)
+      if (!ov) {
+        const full = await page.evaluate(() => {
+          const main = document.querySelector('main')
+          return main ? main.scrollHeight + (main.getBoundingClientRect().top || 0) : document.scrollingElement.scrollHeight
+        })
+        await page.setViewportSize({ width: st.w, height: Math.min(Math.max(st.h, full + 8), 3200) })
+        await page.waitForTimeout(250)
+      }
+      const file = `${roleName}__${route.replace(/[/:?=&]/g, '_').replace(/^_/, '')}${ov ? `__${ov.name}` : ''}__${st.w}-${st.scheme}.png`
       await page.screenshot({ path: path.join(CONFIG.outDir, file) })
       const findings = []
+      if (ov) {
+        if (openError) findings.push({ sev: 'must', what: `overlay "${ov.name}" could not be opened: ${openError}` })
+        else if (!box) findings.push({ sev: 'must', what: `overlay "${ov.name}" is not visible` })
+        else {
+          if (box.x < -1 || box.x + box.width > st.w + 1) findings.push({ sev: 'must', what: `overlay "${ov.name}" leaves the screen (x ${Math.round(box.x)}, width ${Math.round(box.width)}, viewport ${st.w})` })
+          if (box.width < Math.min(ov.minWidth ?? 0, st.w - 32)) findings.push({ sev: 'must', what: `overlay "${ov.name}" is squeezed to ${Math.round(box.width)}px` })
+        }
+      }
       if (m.docV > 1) findings.push({ sev: 'must', what: `document scrolls vertically by ${m.docV}px (a second scrollbar)` })
       if (m.docH > 1) findings.push({ sev: 'must', what: `document scrolls horizontally by ${m.docH}px` })
       for (const c of m.clipped.slice(0, 5)) findings.push({ sev: 'must', what: `clipped text: ${c}` })

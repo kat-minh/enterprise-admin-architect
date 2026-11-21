@@ -42,6 +42,16 @@ Read when: building or reviewing any list page.
 
 **Never** load thousands of records into the browser to filter client-side. Lists > ~200 potential rows use **server-side** pagination, filtering and sorting.
 
+## Column visibility and saved views
+
+Proven in a build. Both are per-admin conveniences kept on the device; neither changes what a role may see.
+
+- **Storage:** one key per admin and table (`<app>.table.<adminId>.<table>` in `localStorage`) holding `{ hidden: [columnKey], views: [{ id, name, search }] }`. Keyed by the admin's id so two people on one computer never see each other's. **Validate on read** (types, lengths, counts) and fall back to the defaults on anything unexpected (an older shape, a hand edit); wrap every access in try/catch (private mode, quota). Nothing is sent to the server. Say it in the UI ("Saved on this browser, for you only"); when operators use several devices, store it on the server instead and say so in the module spec.
+- **Hiding columns:** the identifier column and the open/actions column are `required` and never offered. Hidden columns are hidden in the card layout too. A "Restore defaults" button. The toolbar button shows how many columns are visible.
+- **Saved view = the list's own URL query** (filters, search, sort, page size) without the page number or an open drawer, keys sorted, empty values dropped. List state already lives in the URL, so applying a view is navigating to it, and the applied view is marked (`aria-current`). Name 1-40 characters, unique ignoring case and accents, at most 10 per table. Before saving, show in plain words what will be saved ("Status: active · Sort: -created_at"). Deleting needs no confirmation: it is local and quick to recreate.
+- **Phone:** when the table becomes cards its header, and the sort buttons with it, are gone. Provide a sort control (a select) in the toolbar; otherwise sorting is impossible on a phone.
+- **Deliberately not offered, and written down as such in the module spec:** *inline editing* of admin data (every change needs a reason and an audit entry, which a cell edit cannot collect) · *column resize and reorder* (more behaviour to test and make accessible, little gain when low-priority columns already hide) · *row expansion* when a preview drawer exists.
+
 ## Server contract
 
 Request (query): `q`, `page` (1-based) or `cursor`, `pageSize`, `sort` (`-createdAt,name`), filters as named params (`status=paid,shipped`, `createdFrom`, `createdTo`, `ownerId`). Whitelist sortable/filterable fields server-side.
@@ -98,6 +108,8 @@ Response: `{ data: T[], meta: { total, page, pageSize, totalPages } }` (or `next
 ## Acceptance checklist
 
 - [ ] URL reflects search/filter/sort/page; refresh and Back work
+- [ ] Preferences kept on the device (hidden columns, saved views) are keyed by admin, validated on read, survive a reload, and a damaged stored value falls back to the defaults
+- [ ] On a phone, sorting is still possible (a sort control replaces the header buttons)
 - [ ] Server-side pagination/filter/sort verified in the network tab
 - [ ] All six states implemented (loading, refetch, empty-initial, empty-filtered, error, forbidden)
 - [ ] Bulk actions: confirm, per-item results, audit entry, limits

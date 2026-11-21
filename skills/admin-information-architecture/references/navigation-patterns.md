@@ -60,16 +60,31 @@ Default flow: **Table → Preview Drawer → Full Detail Page**.
 
 ## URL state
 
-Represent in the query string: search `q`, filters (`status=paid,shipped`), `sort=-createdAt`, `page`, `pageSize`, `view` (saved view), `tab`, `drawer=<id>` (so a drawer is linkable). Benefits: shareable, refresh-safe, Back button works. Table density and column visibility are **user preferences** (local/server-persisted), not URL.
+Represent in the query string: search `q`, filters (`status=paid,shipped`), `sort=-createdAt`, `page`, `pageSize`, `view` (saved view), `tab`, `drawer=<id>` (so a drawer is linkable). Benefits: shareable, refresh-safe, Back button works. Table density and column visibility are **user preferences** (local/server-persisted), not URL; a saved view is a named URL query (`admin-design-system/references/data-table-spec.md`, "Column visibility and saved views").
 
 After create/edit/delete, return to the list URL the user came from (store `returnTo`).
 
 ## Breadcrumbs, search, command menu
 
 - Breadcrumbs: `Group › Module › Record name` (use the record's human label, never raw ID alone). Last crumb is not a link.
-- Global search (`/` or `Ctrl/Cmd+K`): searches 3-6 key entities (orders by number, customers by email/phone, products by SKU/name). Results grouped, permission-filtered, keyboard-navigable.
-- Command menu: navigation shortcuts + "Create …" actions + recent items. Skip when < 8 modules.
-- Notifications bell: actionable events with deep links; unread count; "mark all read".
+- Global search and command menu (`Ctrl/Cmd+K`): one dialog, specified below. Skip it when there are fewer than about 8 destinations.
+- Header bell: the attention bell below. A notification centre with read/unread is a different thing and needs an event store.
+
+## Command menu and keyboard shortcuts
+
+Proven in a build (tests per role, axe in light and dark, phone width).
+
+- **Trigger:** `Ctrl/⌘+K` anywhere, also inside a text field, plus a visible header button that shows the key (an icon on narrow screens, with an accessible name that names the key and `aria-keyshortcuts`). It never opens on top of another modal dialog; pressing the key again closes it.
+- **Contents, in order:** recent pages (per admin, kept on the device, the current page left out) · pages · actions (theme, shortcut help, account, sign out) · once two characters are typed, one "Search for 'x' in <list>" entry per list the role may read (people, records, audit log). Nothing the role may not open appears; the server still refuses. In the test, the role's sidebar is the oracle for the pages and for which search entries exist.
+- **Matching:** accent-insensitive and every word must match, in any order ("nguoi dung" finds "Người dùng"). No fuzzy ranking is needed for a dozen destinations.
+- **Semantics:** a modal dialog holding a combobox input over a listbox. `aria-activedescendant` points at the active option; Arrow Up/Down wrap, Home/End jump, Enter runs, Escape closes and focus returns to where it was; a polite live region announces the number of results; group labels are not options.
+- **IME:** an Enter that confirms a composition (Vietnamese Telex/VNI, Chinese, Japanese) must not run a command: ignore key events with `isComposing` (Safari reports `keyCode` 229 for the Enter that ends a composition, with `isComposing` already false: ignore that too).
+- **Single-key shortcuts** ("g" then a letter to go to a page; "?" for the list): never while typing in a field, never with a modifier, never while a dialog is open, only to pages the role may open. One unique letter per page; the "?" list shows only the role's pages. Avoid keys that the browser or a screen reader uses.
+- **No destructive actions in the menu** (no "delete", "suspend", "publish"): those need their reason dialog, which a one-line menu cannot give.
+
+## Attention bell
+
+A bell in the header on every page that shows what needs doing now. It must call the **same function** as the dashboard's task list (one place decides what counts, or two lists drift apart), ask only for data the role may read (no 403 on any page, ever), and refresh when opened and when the tab regains focus (it is not a push channel, so do not word it as one). Its badge counts tasks, never "unread". The popover is a dialog with a title, the tasks with a way in each, an empty state ("Nothing pending") and an error state. A real notification centre (events with read/unread, mark all read) needs a server-side event store: build it only when the owner asks for events the dashboard cannot express.
 
 ## Sidebar behaviour
 

@@ -63,8 +63,10 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] UX-10 Responsive at 1440/1024/768/390; only tables scroll horizontally; exactly one vertical scroll region per page (the document never scrolls when the shell has its own scroll area).
 - [ ] UX-11 Toasts consistent; messages actionable; no native alert/confirm.
 - [ ] UX-12 None of the "AI admin tells" from `enterprise-admin-architect/references/principles-and-antipatterns.md`.
-- [ ] UX-13 The automated UI audit (`templates/ui-audit.mjs`) is clean for every role, page, width and theme (no `must` finding), and the screenshots of all pages were reviewed by a person (or by you, looking) with the notes in `qa-report.md`.
+- [ ] UX-13 The automated UI audit (`templates/ui-audit.mjs`) is clean for every role, page, width and theme (no `must` finding), and the screenshots of all pages were reviewed by a person (or by you, looking) with the notes in `qa-report.md`. Every overlay that opens (command menu, bell or filter popovers, dialogs, drawers) was opened in the audit too, in both themes and at phone width, and looked at: a popover whose CSS class collided with older rules was squeezed into three columns while every page-level check passed.
 - [ ] UX-14 The dashboard meets the enterprise bar (`admin-design-system/references/dashboard-design.md`): a metric catalogue exists and the widgets are its rows; tasks and state counters are separate; a range selector with previous-period comparison, time zone and freshness; a definition and a way in for every number; a different landing view per role, each reviewed as that role; CSV export of what is on screen.
+- [ ] UX-15 A command menu / global search, when present, is a modal combobox over a listbox with the keyboard model of `admin-information-architecture/references/navigation-patterns.md`: offers only what the role may open (the sidebar is the oracle), matches without accents, ignores an Enter that confirms an IME composition, never opens over another dialog; single-key shortcuts never fire while typing or with a dialog open. A header bell shows the same tasks as the dashboard (one function), requests only data the role may read, and no role gets a 403 from any page.
+- [ ] UX-16 Loading does not move the page: skeletons reserve about the height of the loaded content, a header sentence that changes when data arrives already has its final length, and cumulative layout shift is at most 0.1 at phone width on the dashboard and on the biggest list (measured, with the elements that moved named if it is not).
 
 ## C. Functionality
 
@@ -81,6 +83,7 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] FN-11 Dashboard numbers match the underlying data (spot-check against lists/DB).
 - [ ] FN-12 Errors are handled: API down, 401 (re-login with return URL), 403, 404, 409, 500.
 - [ ] FN-13 Every dashboard figure was compared with an independent recomputation from the raw rows (not the same SQL) for every range, including boundary rows (the last and first minute of a day in the business time zone, exactly N days ago, archived rows) and an empty database; mutually exclusive buckets add up to the total (`admin-module-builder/references/analytics-endpoints.md`).
+- [ ] FN-14 Preferences stored on the device (hidden columns, saved views, recent pages) are keyed by admin, validated on read with a safe fallback, never widen what a role may see, and are tested: survive a reload, do not leak to another admin on the same browser, a damaged value does not break the page. Undo is offered only where the inverse is exact (archive/restore), is itself an audited action that points back at the original reason, and is never the only way to reach the inverse.
 
 ## D. Security
 
@@ -121,7 +124,7 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] PERF-5 UI responsive with 100-row pages; no layout shift; large lists virtualised if needed.
 - [ ] PERF-6 Per-row counts and aggregates on a list are computed for the returned page only (keys paged first); sorting by an aggregate uses a pre-aggregated join, not one lookup per row. Before/after timings are in the QA report.
 - [ ] PERF-7 Aggregate endpoints (dashboard, reports) were timed on the large dataset, cold and warm, for the widest range, section by section; the cache strategy (TTL, stale-while-revalidate, `generated_at`) is documented; a cold computation over budget is recorded with its number and plan, not hidden by the cache.
-- [ ] PERF-8 A front-end budget is set and recorded (initial JavaScript per route in gzip, largest chunk, largest contentful paint and interaction latency on the dashboard and on the biggest list, requests before the first row); route-level splitting and lazy heavy libraries are verified in the build output.
+- [ ] PERF-8 A front-end budget is set and **measured** on the production build (`templates/perf-frontend.mjs`: JavaScript per route in gzip, largest contentful paint, layout shift, blocking time and interaction latency, phone profile with a slowed CPU and network, desktop profile), with the figures and the seed they were taken with recorded in `qa-report.md`. Defaults: JavaScript ≤ 170 KB gzip per route, LCP ≤ 2.5 s on the phone profile, CLS ≤ 0.1, blocking time ≤ 200 ms, longest interaction ≤ 200 ms. A figure over budget is recorded with its number and a plan, not hidden by raising the threshold; route-level splitting and lazy heavy libraries are verified in the build output.
 
 ## G. Accessibility
 

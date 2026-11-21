@@ -71,7 +71,9 @@ Default to **polling with a manual refresh and "updated N min ago"**; pause when
 
 ## Performance budget
 
-Decide it per project and record it in the QA report: initial JavaScript per route (gzip), the largest chunk, and the timings that matter on the dashboard and on the biggest list (largest contentful paint, interaction latency, the number of requests before the first row appears). Use the build output and the browser's own tooling. Typical levers: route splitting, lazy heavy libraries, debounced search (about 300 ms), virtualised lists beyond a couple of hundred rows, no waterfall of dependent requests (fetch in parallel, or compose on the server), cached reads. Gate `PERF-8` in `quality-gates.md`.
+Decide it per project, **measure it on the production build** with `admin-qa-gate/templates/perf-frontend.mjs`, and record the figures and the data they were taken with in the QA report (gate `PERF-8`). Defaults, the Web Vitals "good" thresholds plus the usual critical-path budget: JavaScript loaded by a route ≤ 170 KB gzip · largest contentful paint ≤ 2.5 s on a phone profile (CPU 4x slower, 1.6 Mbps, 150 ms latency) · cumulative layout shift ≤ 0.1 · blocking time ≤ 200 ms · longest interaction ≤ 200 ms. Also report the requests made before the first content and the largest chunk (reported, not judged: only what a route loads in total has a standard budget). Typical levers: route splitting, lazy heavy libraries, debounced search (about 300 ms), virtualised lists beyond a couple of hundred rows, no waterfall of dependent requests (fetch in parallel, or compose on the server), cached reads.
+
+**Layout stability is part of the budget.** Skeletons reserve about the height of the loaded content (measure the loaded sizes; tiles of different content have different heights), and a sentence that changes when data arrives (a date range, "updated 1 minute ago") already has its final length while loading: when a line wraps late, controls beside it jump to a new line and everything below moves. The measurement names the elements that moved, which is how both causes were found.
 
 ## Observability
 

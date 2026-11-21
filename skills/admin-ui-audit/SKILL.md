@@ -17,6 +17,8 @@ Stack, component kit, tokens (colours, spacing, type), the route list, the roles
 ### 2. Run the automated audit
 Copy `admin-qa-gate/templates/ui-audit.mjs` into the project's tooling folder, fill its CONFIG block (app URL, roles with accounts and pages, the sign-in function), and run it: every page × every role × 1440 / 1024 / 390 px × light and dark. It records, per state, a full-height screenshot and these findings: the document scrolling when the shell has its own scroll area (a second scrollbar), horizontal overflow, clipped text, content spilling out of its card, touch targets under 28 px on phones, accessibility violations (contrast, names, labels, landmarks, headings, ARIA), console errors and failed API calls.
 
+Pages are not the whole interface: **also open every overlay** (command menu, bell and filter popovers, dialogs, drawers, toasts) in the audit, in both themes and at phone width, wait for its animation to finish, and run the checks on it. Overlays are where a collided class name or a clipped popover hides.
+
 No browser automation in your tool? Walk the same matrix by hand with the checklist in `quality-gates.md` §B and §G and say that the run was manual.
 
 ### 3. Fix at the cause, then re-run
@@ -35,7 +37,7 @@ Open the screenshots of every page, at phone and at desktop width, in both theme
 Put the notes and the decisions in the report; fix what is cheap and cross-cutting now, list the rest with severity.
 
 ### 5. Performance pass
-Per route: JavaScript size (gzip) and the largest chunk from the build output; on the dashboard and on the biggest list, largest contentful paint, interaction latency and the number of sequential requests before the first row. Large data: the recipe in `admin-qa-gate/references/e2e-test-playbook.md`. Compare with the budget in `frontend-architecture.md`.
+Copy `admin-qa-gate/templates/perf-frontend.mjs`, fill its CONFIG block and run it on the production build. Per route and for a phone and a desktop profile it reports JavaScript size (gzip), requests before content, largest contentful paint, layout shift (with the elements that moved), blocking time and the longest interaction. Large data: the recipe in `admin-qa-gate/references/e2e-test-playbook.md`. Compare with the budget in `frontend-architecture.md`.
 
 ### 6. Re-run the audit for every role you touch
 Including roles added later (an editor, a custom role): they see different menus and pages.

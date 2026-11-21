@@ -8,7 +8,7 @@ description: Phase 8 of building an admin system - verify and report honestly. R
 Principle: **a module is complete only when its intended business workflow works.** "It renders" and "it compiles" are not completion. Report outcomes faithfully - failures, skipped checks and unverified areas included.
 
 Inputs: `docs/admin/*`, the codebase, a runnable app. Outputs: `docs/admin/qa-report.md` (template in `templates/`), updated `implementation-status.md` + inventory statuses.
-References: `references/quality-gates.md` (checklists, severities, pass criteria), `references/e2e-test-playbook.md` (how to test, with code patterns; includes the large-dataset recipe and the checks for admin-managed public content). Templates: `templates/qa-report.md`, `templates/runbook.md` (gate DOC-5: write it before Gate 3), `templates/ui-audit.mjs` (automated UI audit across roles, widths and themes: run it after every module, gate UX-13; the standalone skill `admin-ui-audit` wraps it for an existing admin).
+References: `references/quality-gates.md` (checklists, severities, pass criteria), `references/e2e-test-playbook.md` (how to test, with code patterns; includes the large-dataset recipe and the checks for admin-managed public content). Templates: `templates/qa-report.md`, `templates/runbook.md` (gate DOC-5: write it before Gate 3), `templates/ui-audit.mjs` (automated UI audit across roles, widths and themes: run it after every module, gate UX-13; the standalone skill `admin-ui-audit` wraps it for an existing admin), `templates/perf-frontend.mjs` (front-end budget measured on the production build, phone and desktop profiles, layout shift with the elements that moved, gate PERF-8).
 
 ## Procedure
 

@@ -30,7 +30,7 @@ test('non-orchestrator bundles include the orchestrator rules; --no-orchestrator
 test('the standalone ui-audit bundle inlines the audit script and the references it points to from other skills', () => {
   const out = bundle('ui-audit').stdout;
   const files = [...out.matchAll(/^## File: (.+)$/gm)].map((m) => m[1]);
-  for (const need of ['templates/ui-audit.mjs', 'references/quality-gates.md', 'references/dashboard-design.md', 'references/frontend-architecture.md', 'references/accessibility-responsive.md']) {
+  for (const need of ['templates/ui-audit.mjs', 'templates/perf-frontend.mjs', 'references/quality-gates.md', 'references/dashboard-design.md', 'references/frontend-architecture.md', 'references/accessibility-responsive.md']) {
     assert.ok(files.includes(need), `ui-audit bundle lacks ${need}: ${files}`);
   }
   assert.match(out, /UX-13/);

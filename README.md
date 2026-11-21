@@ -34,7 +34,9 @@ Screenshots from the build the suite was proven on: a back office for a real con
 |---|---|
 | ![Editing a role's permissions with a pending-change summary](docs/assets/screens/role-editing.png) | ![Content page showing the running version, its history and a reset option](docs/assets/screens/content-publish-history.png) |
 
-<p align="center"><img src="docs/assets/screens/dashboard-phone.png" alt="The same dashboard at phone width (390 px)" width="260"><br><sub>The same dashboard at 390 px. The UI audit checks every page at phone, tablet and desktop widths, in light and dark.</sub></p>
+| Command menu (Ctrl/⌘+K): jump to a page or search a list; it offers only what the role may open and matches without accents | The same dashboard at 390 px; the UI audit checks every page and every open overlay at phone, tablet and desktop widths, light and dark |
+|---|---|
+| ![Command menu listing recent pages, pages with their keyboard shortcuts and actions](docs/assets/screens/command-menu.png) | <img src="docs/assets/screens/dashboard-phone.png" alt="The dashboard at phone width (390 px)" width="220"> |
 
 ## What you get
 
@@ -64,7 +66,9 @@ The suite was proven by using it to build a full-stack admin (backend, separate 
 
 - **Server-side enforcement, tested per role:** a role × endpoint matrix against the API (403 when forbidden, not only a hidden button), with the matrix document read at run time as the oracle.
 - **Dashboard figures verified independently:** every metric recomputed from raw rows in plain code and compared for 7, 30 and 90 days, including boundary rows at the edge of a day in the business time zone.
-- **UI audit before the owner has to point things out:** every page × role × phone / tablet / desktop × light / dark; it found a second scrollbar, clipped text, contrast failures, a popover spilling out of its card, and a widget that asked for data its role may not see.
+- **UI audit before the owner has to point things out:** every page and every open overlay × role × phone / tablet / desktop × light / dark (350 states in the proving build); it found a second scrollbar, clipped text, contrast failures, a popover spilling out of its card, a popover off the screen, a button whose accessible name did not match its label on every page, and a widget that asked for data its role may not see.
+- **A keyboard-first back office:** a command menu (Ctrl/⌘+K) and shortcuts that offer only what the role may open, a header bell that shows the same tasks as the dashboard, per-admin hidden columns and saved views, undo where the inverse is exact. Tested per role, with axe in light and dark.
+- **A front-end budget that is measured:** the production build per route on a phone profile (CPU 4x slower, 1.6 Mbps): 107-122 KB of JavaScript, LCP up to 2.2 s, interactions under 100 ms. Two lists were over the blocking-time budget (about 218 ms against 200) and the QA report says so.
 - **Large data:** 200,000 users and 400,000 trips; list endpoints that were 1.5-8 s became sub-second after the recipe in the QA playbook.
 - **Public product untouched** except where intended; editing texts, banners and brand colours in the admin was verified in the real public app (draft invisible, preview, publish, rollback, endpoint down).
 - **A delegated agent's work re-verified on a separate stack** before it was believed.
