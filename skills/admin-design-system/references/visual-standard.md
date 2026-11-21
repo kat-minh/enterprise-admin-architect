@@ -16,7 +16,7 @@ Read when: defining tokens or reviewing whether an admin "looks professional".
 
 ## Target qualities
 
-Professional · clean · structured · information-dense but readable · consistent · functional · trustworthy · minimal decoration. The admin is a tool used for hours: low visual noise, strong hierarchy, predictable positions.
+The admin is a tool used for hours: low visual noise, strong hierarchy, predictable positions, information-dense but readable, consistent, minimal decoration. "Professional, clean, modern" is **not** a direction: every admin claims it. The qualities below are the floor; the identity comes from the recorded design direction (`anti-slop-design.md` §1), and the values in this file are **defaults to change unless a reason is recorded**.
 
 ## Reference products (principles to learn from)
 
@@ -32,7 +32,7 @@ Professional · clean · structured · information-dense but readable · consist
 | Token | Default | Rationale |
 |---|---|---|
 | Base font size | 14px (tables 13px, captions 12px) | Admin density |
-| Font | Project font; else Inter / system UI stack. **Must support Vietnamese** if applicable (Inter, Be Vietnam Pro, Roboto OK) | Diacritics rendering |
+| Font | Project font, or a **recorded choice** (a system stack is acceptable when chosen on purpose). **Must support the product's scripts** (Vietnamese diacritics: Be Vietnam Pro, Inter, IBM Plex Sans, Public Sans, Roboto, Source Sans 3 and others do) | Diacritics rendering; an undecided font is the tell |
 | Type scale | 12 / 13 / 14 / 16 / 20 / 24 (page title 20-24, section 16) | Few steps |
 | Weight | 400 body, 500 labels/headers, 600 titles | |
 | Spacing | 4px grid: 4, 8, 12, 16, 24, 32, 48 | |
@@ -65,6 +65,7 @@ Always render **label text** (and optionally an icon); colour alone is insuffici
 
 - Page = `PageHeader` (title, description, primary action, secondary actions) → toolbar (search, filters, view, density) → content. 16-24px page padding.
 - One scroll region (the main area); sticky table headers; sticky form footer.
+- **Tab rows and other horizontal strips** never show a native scrollbar: the hairline is a `box-shadow` of the row (not a border), the active underline sits inside the tab (`bottom: 0`, never `-1px`), `overflow-y` is hidden, the horizontal scrollbar is hidden, a fade marks the edge that has more, and the chosen tab is scrolled into view. Labels are short (about 14 characters or fewer) so a row fits at 768 px. Gate `UX-20`.
 - Cards used for grouping, not for decoration; avoid card-within-card-within-card.
 - Right-aligned numeric columns; monospace/tabular numerals for money/IDs; truncation with tooltip.
 
@@ -76,21 +77,23 @@ Always render **label text** (and optionally an icon); colour alone is insuffici
 
 ## Example CSS variables
 
+**Shape of the token set** (names and roles only; **the values come from the direction, not from this file**: a copied palette is the framework default and an undecided design):
 ```css
 :root {
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --text-1: #111827; --text-2: #4b5563; --text-3: #6b7280;
-  --bg-app: #f9fafb; --bg-surface: #ffffff; --bg-subtle: #f3f4f6;
-  --border: #e5e7eb; --border-strong: #d1d5db;
-  --accent: #2563eb; --accent-hover: #1d4ed8; --accent-subtle: #eff6ff;
-  --success: #16a34a; --warning: #d97706; --danger: #dc2626; --info: #2563eb;
-  --radius-control: 6px; --radius-card: 8px; --radius-overlay: 12px;
-  --control-h: 32px; --row-h: 40px; --sidebar-w: 240px; --header-h: 56px;
-  --focus-ring: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--accent);
+  --font-sans: <chosen family>, <fallbacks>;
+  --text-1 / --text-2 / --text-3: <neutral ramp tinted toward the accent, 4.5:1 or better on every surface>
+  --bg-app / --bg-surface / --bg-subtle: <three steps, plus a second layer for sidebar and toolbar>
+  --border / --border-strong: <visible in both themes; inputs reach 3:1 against their surface>
+  --accent / --accent-hover / --accent-subtle / --on-accent: <one accent with listed roles>
+  --success / --warning / --danger / --info: <four hues, none equal to the accent>
+  --radius-control / --radius-card / --radius-overlay: <per role, one character>
+  --control-h / --row-h / --sidebar-w / --header-h: <numbers per density mode>
+  --focus-ring: <two-layer ring, 3:1 against the surface>
 }
 ```
+Derive the ramp from three inputs (base, accent, contrast) instead of picking ninety values; steps five apart reach 4.5:1.
 Map these into the UI kit's theme (see `stack-adapters.md`) instead of duplicating styling.
 
 ## What to avoid
 
-Gradients and glassmorphism as decoration · giant KPI cards · oversized padding that pushes data below the fold · multiple accent colours · inconsistent radius/spacing between modules · emoji as icons · fake charts · centre-aligned tables · nested scroll containers · modals for long forms.
+The 33 recognisable tells and how each is checked are in `anti-slop-design.md` §2. In short: gradients and glassmorphism as decoration · giant KPI cards · oversized padding that pushes data below the fold · multiple accent colours · inconsistent radius/spacing between modules · emoji as icons · fake charts · centre-aligned tables · nested scroll containers · modals for long forms.

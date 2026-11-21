@@ -24,6 +24,8 @@ A mature admin (think Shopify Admin, Stripe Dashboard, Linear, GitHub settings) 
 
 ## "AI-generated admin" tells (and fixes)
 
+This table lists the structural tells. The visual and content tells (gradients, one radius and one shadow on everything, tinted icon tiles, four identical stat tiles, framework-default blue, placeholder copy, raw enum text) and how each is checked are in `admin-design-system/references/anti-slop-design.md` §2.
+
 | Tell | Why it fails | Fix |
 |---|---|---|
 | Sidebar + 4 KPI cards + generic tables, regardless of business | Not tied to any real operation | Dashboard = attention queues + domain KPIs derived from `module-inventory.md` |

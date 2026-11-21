@@ -24,7 +24,7 @@ The dashboard answers: **"What needs me now, and is the business healthy?"** - i
 
 Layout (top → bottom):
 1. **Needs attention** - queues of actionable items with counts, aging, and deep links (pending orders, unanswered leads, failed payments, expiring holds).
-2. **KPI strip** - 3-6 stat tiles with period comparison and a one-line definition.
+2. **Key figures** - **one lead figure** with its baseline and period, the rest as a compact ranked list or 3-6 small tiles of **different weight**. A strip of four identical tiles (icon, big number, green "+12%") is the most recognised generated-dashboard tell: no icon in a tinted tile, no per-tile accent hue.
 3. **Trends** - 1-3 charts, each answering a named question ("Revenue vs last period").
 4. **Recent activity** - latest meaningful events (audit/timeline).
 5. **Quick actions** - the 3-5 most frequent operator tasks.
@@ -36,7 +36,7 @@ Role-specific: the landing view differs per role (Finance sees payments/refunds;
 | Widget | Rules |
 |---|---|
 | `AttentionQueue` | Title, count, oldest-item age/SLA colour, top 3-5 items, "View all" with the filter pre-applied. Hide for roles without access. |
-| `StatTile` | Label, value, delta vs previous period (▲▼ with text, not colour alone), time window, tooltip with definition; click → filtered list. Compact (not giant). |
+| `StatTile` | Label, value, delta vs previous period (▲▼ with text, not colour alone), time window, tooltip with definition; click → filtered list. Compact (not giant); the numeral stays under about 32 px and the tile under about 112 px; proportional figures in tiles, tabular figures in tables. |
 | Trend chart | Single question, labelled axes/units, time range control, comparison series optional, accessible summary/table alternative. |
 | Activity feed | Actor · action · entity link · relative time. |
 | Health/alerts | Integration down, jobs failing, low stock - actionable links. |

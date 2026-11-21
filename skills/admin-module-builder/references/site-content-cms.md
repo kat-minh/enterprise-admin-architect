@@ -63,8 +63,10 @@ For configuration documents (not articles):
 
 ## 5. Pattern: theme and brand
 
-- Expose a **whitelist** of tokens (the accent family), never free CSS. Validate contrast **per theme** (text on accent ≥ 4.5:1, accent against the surface ≥ 3:1), derive hover and soft variants by formula, and apply them as CSS variables before first paint (keep the last good values in local storage, like the theme initialiser).
-- Logos and images need the media module (upload, type and size limits, alt text). With no upload support, say that images are out of v1.
+- Expose a **closed catalogue** of tokens (colours, font choice, type scale, radius, shadow, density, motion), never free CSS, and let the **server** validate, derive and resolve them. The accent family alone is level L1 of `capability-ladders.md`: an owner who says "edit the UI like a CMS" wants at least L2. The whole design layer (colour and contrast rules, fonts, assets, delivery, per-surface publish, preview, export) is in `design-system-cms.md`; read it before specifying or building any of it.
+- Contrast is computed per theme (normal text ≥ 4.5:1, accent against the surface ≥ 3:1) and also for every derived colour; apply the result as CSS variables before first paint (keep the last good values in local storage, like the theme initialiser).
+- Logos, favicon and the share image need an **asset store** (upload, magic-byte check, size and dimension limits, re-encoding, alt text, immutable storage): build the minimal one described in `design-system-cms.md` §5 instead of excluding images.
+- **Brand is one place, and it is not a tab of this module.** The name, description, logo, favicon, share image and brand colour are edited together, as the first tab of the appearance screen (`design-system-cms.md` §14). Do not give the content module a "Brand" tab while the design module has another: the operator cannot guess which holds the colour and which the logo (`UX-19`). The texts surface may still store the name and description; the place that edits them is the appearance screen. **Publishing is not a tab of this module either**: publish, history and rollback apply to texts, banners, brand and design together, so they are one release screen of their own (`admin-information-architecture`, concept ledger).
 - Free-form CSS, JS or HTML injection is a security hole. If "custom code" is demanded, restrict it to the top role, sanitise, and set a CSP.
 
 ## 6. Pattern: banners and announcements

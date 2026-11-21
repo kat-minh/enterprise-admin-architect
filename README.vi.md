@@ -30,9 +30,12 @@ Dùng công cụ AI khác? Xem [Cài đặt](#cài-đặt). Muốn xem kết qu�
 |---|---|
 | ![Dashboard với các việc cần xử lý và chỉ số chính so với kỳ trước](docs/assets/screens/dashboard.png) | ![Trang vai trò: bốn thẻ vai trò và ma trận vai trò theo quyền](docs/assets/screens/roles-matrix.png) |
 
-| Sửa một vai trò: thay đổi hiện thành bản so sánh, áp dụng kèm lý do và ghi vào nhật ký audit | Nội dung giao diện (CMS): bản nháp, xem thử, xuất bản, lịch sử phiên bản, hoàn tác |
+| Sửa một vai trò: thay đổi hiện thành bản so sánh, áp dụng kèm lý do và ghi vào nhật ký audit | Xuất bản: một màn hình phát hành cho văn bản, thông báo, thương hiệu và thiết kế; số thay đổi đang chờ hiện trên mục thanh bên và trên chip ở mọi trang chỉnh sửa |
 |---|---|
-| ![Sửa quyền của một vai trò với phần tóm tắt thay đổi chờ áp dụng](docs/assets/screens/role-editing.png) | ![Trang nội dung hiển thị phiên bản đang chạy, lịch sử và nút về chữ gốc](docs/assets/screens/content-publish-history.png) |
+| ![Sửa quyền của một vai trò với phần tóm tắt thay đổi chờ áp dụng](docs/assets/screens/role-editing.png) | ![Màn hình Xuất bản: một thay đổi thương hiệu đang chờ kèm bản so sánh, liên kết về trang chỉnh sửa và lịch sử phiên bản](docs/assets/screens/publishing.png) |
+
+<p align="center"><img src="docs/assets/screens/appearance-workbench.png" alt="Màn hình Giao diện: bộ giao diện dựng sẵn và màu ở bên trái, app thật ở bên phải hiện thay đổi trước khi lưu" width="860"></p>
+<p align="center"><sub><b>Giao diện</b>: thương hiệu và một danh mục design system đóng, đặt cạnh app thật. Thay đổi chưa lưu hiện ngay trong khung xem trước, mỗi lựa chọn có mẫu thể hiện đúng tác dụng của nó, và độ tương phản của từng màu do máy chủ kiểm.</sub></p>
 
 | Menu lệnh (Ctrl/⌘+K): nhảy trang hoặc tìm trong một danh sách; chỉ hiện những gì vai trò được mở và tìm không phân biệt dấu | Cùng dashboard ở 390 px; UI audit kiểm tra mọi trang và mọi lớp phủ đang mở ở độ rộng điện thoại, máy tính bảng, desktop, sáng và tối |
 |---|---|
@@ -60,6 +63,15 @@ Settings & Access   Admin Users · Roles & Permissions · Audit Log · Settings
 
 Kèm ma trận role × quyền (ví dụ `orders.refund` chỉ dành cho Finance), spec từng module, design system và báo cáo QA ghi lại những gì thực sự đã được kiểm chứng.
 
+## Có gì mới ở 1.7
+
+- **Độ sâu được chọn, không đoán.** Ở Gate 1 bạn thấy mỗi nhóm nền tảng (nội dung, thiết kế, danh tính, quyền riêng tư, vận hành, năng suất, chất lượng UI, dashboard) ở ba mức và chọn một mức; mức đó được ghi lại và đối chiếu với những gì đã xây.
+- **Trình chỉnh thiết kế hành xử như một công cụ thiết kế.** Phần chỉnh nằm cạnh app thật, thay đổi chưa lưu hiện qua bước giải quyết ở máy chủ, có bộ giao diện dựng sẵn, bảng màu nền/chữ được kiểm tương phản, thương hiệu ở một chỗ, và màn hình phát hành riêng. Xem [`design-system-cms.md`](skills/admin-module-builder/references/design-system-cms.md) (tiếng Anh).
+- **Kiểm tra cả những gì người vận hành nhìn thấy, không chỉ những gì test khẳng định được:** mỗi khái niệm một nơi, không có thanh cuộn gốc thừa (audit giờ mở trình duyệt với thanh cuộn hiện, còn chế độ headless mặc định giấu chúng), mẫu khác nhau cho từng lựa chọn, hướng thiết kế được quyết trước token đầu tiên.
+- **Tài liệu và gate về bảo mật, quyền riêng tư và vận hành** (MFA và phiên đăng nhập, quyền của chủ thể dữ liệu, diễn tập khôi phục, readiness), cùng một bước kiểm tra header và CSP chạy được trên bản build của bạn.
+
+Danh sách đầy đủ và kết quả đo: [`CHANGELOG.md`](CHANGELOG.md) (tiếng Anh).
+
 ## Đã chứng minh, không chỉ hứa
 
 Bộ skill được kiểm chứng bằng cách dùng chính nó để xây một admin full-stack (backend, app admin riêng, app công khai giữ nguyên) cho một app web thật, trên bản sao của dự án và một database dùng tạm. Kết quả của lần chạy đó, và những gì các gate đã bắt được:
@@ -68,6 +80,7 @@ Bộ skill được kiểm chứng bằng cách dùng chính nó để xây mộ
 - **Số liệu dashboard được kiểm tra độc lập:** mỗi chỉ số được tính lại từ dữ liệu thô bằng code thường rồi so sánh cho 7, 30 và 90 ngày, gồm cả các dòng nằm sát ranh giới ngày theo múi giờ của doanh nghiệp.
 - **UI audit trước khi chủ sản phẩm phải chỉ từng lỗi:** mọi trang và mọi lớp phủ đang mở × vai trò × điện thoại / máy tính bảng / desktop × sáng / tối (350 trạng thái trong bản dựng kiểm chứng); nó đã tìm ra thanh cuộn thứ hai, chữ bị cắt, lỗi tương phản, popover tràn khỏi thẻ, popover nằm ngoài màn hình, một nút có tên truy cập không khớp nhãn trên mọi trang, và một widget gọi dữ liệu mà vai trò đó không được xem.
 - **Back office dùng được bằng bàn phím:** menu lệnh (Ctrl/⌘+K) và phím tắt chỉ hiện những gì vai trò được mở, chuông trên thanh đầu trang hiện đúng các việc như dashboard, ẩn cột và bộ lọc đã lưu theo từng admin, hoàn tác khi thao tác có nghịch đảo chính xác. Kiểm thử theo từng vai trò, có axe cả sáng và tối.
+- **Một trình chỉnh thiết kế từng bị chấm thấp rồi được xây lại.** Bản đầu qua hết kiểm tra backend và UI audit, vậy mà chủ sản phẩm vẫn thấy thương hiệu bị chia ở hai module, danh mục mỏng, khung xem trước tách khỏi phần chỉnh và thanh cuộn gốc ở mọi hàng tab. Các kiểm tra không thấy được điều nào trong số đó, nên bộ skill giờ có gate cho chúng, và màn hình xây lại được kiểm chứng trên một stack mà người xây không dùng. Bản tường thuật, cùng những gì còn mở, nằm trong [`docs/completeness-review.md`](docs/completeness-review.md) (tiếng Anh).
 - **Ngân sách front-end được đo thật:** bản build production theo từng route với hồ sơ điện thoại (CPU chậm 4 lần, 1,6 Mbps): 107-122 KB JavaScript, LCP tối đa 2,2 giây, tương tác dưới 100 ms. Hai trang danh sách vượt ngân sách thời gian chặn (khoảng 218 ms so với 200) và báo cáo QA nói rõ điều đó.
 - **Dữ liệu lớn:** 200.000 người dùng và 400.000 chuyến đi; các endpoint danh sách từ 1,5-8 giây xuống dưới một giây sau khi áp dụng công thức trong QA playbook.
 - **App công khai không bị đụng tới** ngoài phần cố ý sửa; việc chỉnh chữ, banner và màu thương hiệu trong admin được kiểm chứng trên app công khai thật (bản nháp không lộ, xem trước, xuất bản, hoàn tác, endpoint ngừng hoạt động).
@@ -179,7 +192,7 @@ node skills/admin-qa-gate/scripts/validate-admin-docs.mjs --root <project> --sta
 ## Các lớp module
 
 - **core** (bắt buộc với mọi web): xác thực & phiên, RBAC, dashboard theo nghiệp vụ, tài khoản admin, audit log, cài đặt, tài khoản/bảo mật cá nhân.
-- **foundation** (có điều kiện; loại bỏ phải nêu lý do): người dùng/khách hàng, thông báo, media, import/export, thùng rác, **site content & UI** (chữ giao diện và bản dịch, thương hiệu và màu nhấn, banner, trang tĩnh, menu, SEO, redirect; có bản nháp, xem thử, xuất bản và quay lại; cho cả website **và app**), **leads inbox** (form, phản hồi, báo cáo), mẫu tin nhắn, **nhắn tin tới người dùng**, **job, tích hợp và sức khoẻ hệ thống**, **công tắc vận hành** (kill switch, feature flag, chế độ bảo trì), **yêu cầu quyền riêng tư**, tìm kiếm/command menu, đa ngôn ngữ.
+- **foundation** (có điều kiện; loại bỏ phải nêu lý do): người dùng/khách hàng, thông báo, media, import/export, thùng rác, **site content, giao diện và xuất bản** (chữ giao diện và bản dịch, banner, trang tĩnh, menu, SEO, redirect; thương hiệu và một danh mục design system đóng có xem trước trực tiếp; một màn hình phát hành có bản nháp, xem thử, xuất bản và quay lại; cho cả website **và app**), **leads inbox** (form, phản hồi, báo cáo), mẫu tin nhắn, **nhắn tin tới người dùng**, **job, tích hợp và sức khoẻ hệ thống**, **công tắc vận hành** (kill switch, feature flag, chế độ bảo trì), **yêu cầu quyền riêng tư**, tìm kiếm/command menu, đa ngôn ngữ.
 - **domain** (sinh từ website của bạn): Orders, Bookings, Courses, Articles, Organizations… hoặc module riêng cho nghiệp vụ đặc thù.
 
 ## Nguyên tắc thiết kế

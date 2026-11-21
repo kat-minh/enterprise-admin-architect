@@ -35,6 +35,7 @@ const UI_AUDIT_FILES = [
   ['admin-qa-gate', 'references/quality-gates.md'],
   ['admin-qa-gate', 'references/e2e-test-playbook.md'],
   ['admin-design-system', 'references/visual-standard.md'],
+  ['admin-design-system', 'references/anti-slop-design.md'],
   ['admin-design-system', 'references/accessibility-responsive.md'],
   ['admin-design-system', 'references/dashboard-design.md'],
   ['admin-module-builder', 'references/frontend-architecture.md'],

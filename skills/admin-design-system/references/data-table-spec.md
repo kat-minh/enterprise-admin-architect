@@ -29,7 +29,7 @@ Read when: building or reviewing any list page.
 | URL-synced state | ✔ | | |
 | Row selection + bulk actions | | ✔ | |
 | Column visibility | | ✔ | |
-| Density toggle | | ✔ | |
+| Density toggle (a Must for dense-operations modules, `anti-slop-design.md` §1) | | ✔ | |
 | Sticky header | | ✔ | |
 | Export (respects current filters, async for big sets) | | ✔ | |
 | Persist preferences (columns, density, page size) | | ✔ | |
@@ -68,7 +68,8 @@ Response: `{ data: T[], meta: { total, page, pageSize, totalPages } }` (or `next
 
 - First meaningful column is the identifier/name and acts as the primary link (opens drawer or detail). Row click = preview drawer; modifier-click opens detail in a new tab.
 - Column order: identifier · status · key business fields · owner/assignee · dates (relative with absolute tooltip) · actions.
-- Numeric/money right-aligned with tabular numerals and currency; dates in locale; booleans as badges/icons with text for a11y; long text truncated with tooltip.
+- Numeric/money right-aligned with tabular numerals and currency; dates in locale; booleans as badges/icons with text for a11y; long text **wraps first**, truncation is a last resort and always has a way to read the full value (tooltip plus a keyboard and touch path).
+- The **primary row action is never only inside the overflow menu**, and actions revealed on hover also show on focus-within and on touch (hover-only controls do not exist on a phone).
 - Overflow menu (⋯): secondary actions; destructive last, red, separated; disabled-with-tooltip when lacking permission or invalid state.
 - Inline status change only when the transition is safe and reversible; otherwise route through a dialog capturing reason.
 - **Export** respects the current search and filters and the viewer's permissions (masked fields stay masked); big sets run as a background job. A CSV is UTF-8 with a BOM (spreadsheets read accents), values quoted, and a cell that starts with `=`, `+`, `-` or `@` is neutralised (formula injection). An export is an audited action when it contains personal data.
@@ -79,7 +80,7 @@ Response: `{ data: T[], meta: { total, page, pageSize, totalPages } }` (or `next
 |---|---|
 | Initial loading | Skeleton rows matching column layout (not a lone spinner) |
 | Refetching | Keep previous data visible (`keepPreviousData`), subtle top progress |
-| Empty (no records yet) | Explain what the module is, primary CTA ("Create product"), link to docs/import |
+| Empty (no records yet) | Explain what the module is, primary CTA ("Create product"), link to docs/import. Text and an action, not a sad illustration |
 | Empty (filters yield nothing) | "No results for …" + **Clear filters** button; keep toolbar |
 | Error | Inline `ErrorState` with message, request ID if available, **Retry**; never wipe the toolbar |
 | Forbidden | 403 state explaining missing permission |

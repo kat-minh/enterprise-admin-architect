@@ -178,3 +178,36 @@ test('the template placeholder row "decide each" decides nothing and is itself f
   }), 'discovery');
   assert.ok(hasMsg(r.warnings, /still in "Excluded \/ deferred"/), r.warnings.join(' | '));
 });
+
+test('final stage: a runbook with undecided recovery sections, no RPO/RTO and no restore drill is flagged; a decided one is not', () => {
+  const bad = run(variant({}, {
+    'runbook.md': [
+      '# Admin Runbook', '',
+      '## 1. Hosting and domains', '| Part | Where |', '|---|---|', '| API | CHƯA QUYẾT |', '| Admin | <host / CDN> |', '',
+      '## 5. Backup and restore', 'Nightly dump, kept 30 days. Restore procedure: see the wiki.', '',
+      '## 9. Monitoring and known limits', 'Error tracker: TBD', '',
+    ].join('\n'),
+  }), 'final');
+  assert.ok(hasMsg(bad.warnings, /Hosting and domains" is still undecided/), bad.warnings.join(' | '));
+  assert.ok(hasMsg(bad.warnings, /Backup and restore" states no RPO and RTO/));
+  assert.ok(hasMsg(bad.warnings, /Backup and restore" records no restore drill/));
+  assert.ok(hasMsg(bad.warnings, /Monitoring and known limits" is still undecided/));
+  const good = run(variant({}, {
+    'runbook.md': [
+      '# Admin Runbook', '',
+      '## 1. Hosting and domains', '| Part | Where |', '|---|---|', '| API | Render, https://api.example.com |', '',
+      '## 5. Backup and restore', 'RPO 24 h, RTO 4 h. Restore drill 2026-11-01: 38 minutes, row counts matched.', '',
+      '## 9. Monitoring and known limits', 'Sentry; alerts: error rate above 2 percent to the owner.', '',
+    ].join('\n'),
+  }), 'final');
+  assert.ok(!hasMsg(good.warnings, /undecided at final stage|states no RPO|records no restore drill/), good.warnings.join(' | '));
+  const none = run(EXAMPLE, 'final');
+  assert.ok(hasMsg(none.warnings, /No runbook\.md/) || none.report.results.some((r) => r.file === 'runbook.md'), 'a missing runbook is flagged at the final stage');
+});
+
+test('design stage: a design-system.md without a "Design direction" section is warned about; the example has one', () => {
+  const ok = run(EXAMPLE, 'design');
+  assert.ok(!hasMsg(ok.warnings, /Design direction/), ok.warnings.join(' | '));
+  const bad = run(variant({ 'design-system.md': (t) => t.replace('## 0. Design direction', '## 0. Notes') }), 'design');
+  assert.ok(hasMsg(bad.warnings, /No "Design direction" section/), bad.warnings.join(' | '));
+});

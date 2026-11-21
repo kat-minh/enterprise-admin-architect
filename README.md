@@ -30,9 +30,12 @@ Screenshots from the build the suite was proven on: a back office for a real con
 |---|---|
 | ![Dashboard with tasks that need attention and key figures compared with the previous period](docs/assets/screens/dashboard.png) | ![Roles page: four role cards and a role by permission matrix](docs/assets/screens/roles-matrix.png) |
 
-| Editing a role: the change is a diff, applied with a reason and written to the audit log | Site content (CMS): draft, preview, publish, version history, rollback |
+| Editing a role: the change is a diff, applied with a reason and written to the audit log | Publishing: one release screen for texts, banners, brand and design; what is waiting is counted on the sidebar item and on a chip on every editor |
 |---|---|
-| ![Editing a role's permissions with a pending-change summary](docs/assets/screens/role-editing.png) | ![Content page showing the running version, its history and a reset option](docs/assets/screens/content-publish-history.png) |
+| ![Editing a role's permissions with a pending-change summary](docs/assets/screens/role-editing.png) | ![Publishing screen: one pending brand change with its diff, a link back to the editor, and the version history](docs/assets/screens/publishing.png) |
+
+<p align="center"><img src="docs/assets/screens/appearance-workbench.png" alt="Appearance screen: theme presets and colours on the left, the real app on the right showing the change before it is saved" width="860"></p>
+<p align="center"><sub><b>Appearance</b>: brand identity and a closed design-system catalogue beside the real app. An unsaved edit shows in the preview before you save, every option carries a sample of its own effect, and the contrast of each colour is checked by the server.</sub></p>
 
 | Command menu (Ctrl/⌘+K): jump to a page or search a list; it offers only what the role may open and matches without accents | The same dashboard at 390 px; the UI audit checks every page and every open overlay at phone, tablet and desktop widths, light and dark |
 |---|---|
@@ -60,6 +63,15 @@ Settings & Access   Admin Users · Roles & Permissions · Audit Log · Settings
 
 Plus a role × permission matrix (for example `orders.refund` only for Finance), per-module specifications, a design system, and a QA report that records what was actually verified.
 
+## What's new in 1.7
+
+- **Depth is chosen, not guessed.** At Gate 1 you see each foundation family (content, design, identity, privacy, operations, productivity, UI quality, dashboard) at three levels and pick one; the level is recorded and checked against what was built.
+- **A design editor that behaves like a design tool.** Controls beside the real app, unsaved edits shown through a server-side resolve step, theme presets, curated neutral ramps checked for contrast, brand identity in one place, a separate release screen. See [`design-system-cms.md`](skills/admin-module-builder/references/design-system-cms.md).
+- **Checks for what an operator sees, not only what a test can assert:** one home per concept, no stray native scrollbars (the audit now launches the browser with scrollbars visible, which headless runs hide by default), samples that differ per option, a design direction decided before the first token.
+- **Security, privacy and operations references** with gates (MFA and sessions, data-subject rights, restore drills, readiness), and a headers-and-CSP check you can run on your own build.
+
+Full list and measured results: [`CHANGELOG.md`](CHANGELOG.md).
+
 ## Proven, not promised
 
 The suite was proven by using it to build a full-stack admin (backend, separate admin app, public app untouched) for a real consumer web app, on clones of the project and a throw-away database. What that run produced, and what the gates caught on the way:
@@ -68,6 +80,7 @@ The suite was proven by using it to build a full-stack admin (backend, separate 
 - **Dashboard figures verified independently:** every metric recomputed from raw rows in plain code and compared for 7, 30 and 90 days, including boundary rows at the edge of a day in the business time zone.
 - **UI audit before the owner has to point things out:** every page and every open overlay × role × phone / tablet / desktop × light / dark (350 states in the proving build); it found a second scrollbar, clipped text, contrast failures, a popover spilling out of its card, a popover off the screen, a button whose accessible name did not match its label on every page, and a widget that asked for data its role may not see.
 - **A keyboard-first back office:** a command menu (Ctrl/⌘+K) and shortcuts that offer only what the role may open, a header bell that shows the same tasks as the dashboard, per-admin hidden columns and saved views, undo where the inverse is exact. Tested per role, with axe in light and dark.
+- **A design editor that was rated poor, then rebuilt.** The first version passed every backend check and the UI audit, and the owner still found the brand split across two modules, a thin catalogue, a preview apart from the controls and a native scrollbar on every tab row. None of that was visible to the checks, so the suite now has gates for it, and the rebuilt screens were re-verified on a stack the builder did not use. The account, with what is still open, is in [`docs/completeness-review.md`](docs/completeness-review.md).
 - **A front-end budget that is measured:** the production build per route on a phone profile (CPU 4x slower, 1.6 Mbps): 107-122 KB of JavaScript, LCP up to 2.2 s, interactions under 100 ms. Two lists were over the blocking-time budget (about 218 ms against 200) and the QA report says so.
 - **Large data:** 200,000 users and 400,000 trips; list endpoints that were 1.5-8 s became sub-second after the recipe in the QA playbook.
 - **Public product untouched** except where intended; editing texts, banners and brand colours in the admin was verified in the real public app (draft invisible, preview, publish, rollback, endpoint down).
@@ -179,7 +192,7 @@ node skills/admin-qa-gate/scripts/validate-admin-docs.mjs --root <project> --sta
 ## Module layers
 
 - **core** (mandatory for every web): authentication & sessions, RBAC, domain-aware dashboard, admin accounts, audit log, settings, my account/security.
-- **foundation** (conditional; exclusion needs a stated reason): users/customers, notifications, media, import/export, trash, **site content & UI** (UI text and translations, brand and theme accent, banners, static pages, menus, SEO, redirects, with draft, preview, publish and rollback, for websites **and apps**), **leads inbox** (forms, feedback, reports), message templates, **user messaging**, **jobs, integrations and system health**, **runtime controls** (kill switches, flags, maintenance mode), **privacy requests**, search/command menu, localization.
+- **foundation** (conditional; exclusion needs a stated reason): users/customers, notifications, media, import/export, trash, **site content, appearance and publishing** (UI text and translations, banners, static pages, menus, SEO, redirects; brand identity and a closed design-system catalogue with a live preview; one release screen with draft, preview, publish and rollback; for websites **and apps**), **leads inbox** (forms, feedback, reports), message templates, **user messaging**, **jobs, integrations and system health**, **runtime controls** (kill switches, flags, maintenance mode), **privacy requests**, search/command menu, localization.
 - **domain** (derived from your website): Orders, Bookings, Courses, Articles, Organizations… or modules for an unusual business.
 
 ## Design principles

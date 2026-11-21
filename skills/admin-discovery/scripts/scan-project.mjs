@@ -333,7 +333,7 @@ for (const f of FILES) {
   // Next.js pages router / Nuxt pages
   m = f.match(/(?:^|\/)pages\/(.+)\.(tsx|jsx|vue|mdx)$/);
   // Only when the framework that gives `pages/` its meaning is present (a Vite/React-Router app also has src/pages/*.tsx)
-  if (m && !/\/_/.test('/' + m[1]) && !m[1].startsWith('api/') && (m[2] === 'vue' ? deps.nuxt : deps.next || deps.gatsby)) {
+  if (m && !/\/_/.test('/' + m[1]) && !m[1].startsWith('api/') && !/(^|\/)(components?|ui|lib|libs|features|shared|widgets|hooks)(\/|$)/.test(f.slice(0, m.index)) && (m[2] === 'vue' ? deps.nuxt : deps.next || deps.gatsby)) {
     const route = '/' + m[1].replace(/\/?index$/, '');
     pageRoutes.push({ route: route === '' ? '/' : route, file: f, router: m[2] === 'vue' ? 'nuxt-pages' : 'pages', groups: [] });
     continue;
@@ -663,6 +663,32 @@ for (const f of filesMatching(/\.(ts|tsx)$/)) {
 
 // Deduplicate models by name+source
 const seenModel = new Set();
+/**
+ * Front-end-only and API-less projects have no ORM, schema or migration, but their data still has a shape in TypeScript. When no model was found, list
+ * the exported interfaces and object types of files named types / models / entities / schema as CANDIDATE models (names and field counts only).
+ */
+const typeModels = [];
+const TYPE_FILE_RE = /(^|\/)(types?|models?|entities|schema|interfaces)\.(ts|tsx)$/;
+const NOT_A_MODEL_RE = /(Props|Options|Config|Context|State|Params|Args|Result|Response|Request|Input|Payload|Handler|Event|Action|Store|Hook)$/;
+function collectTypeModels() {
+  for (const f of FILES) {
+    if (typeModels.length >= 80) return;
+    if (!TYPE_FILE_RE.test(f) || isTestFile(f) || /\.d\.ts$/.test(f)) continue;
+    const src = read(f, 120_000);
+    // a one-line type (`export type Id = { id: string; title: string };`) is a model of its own; the multi-line form starts a block at the end of its first line
+    for (const m of src.matchAll(/^export\s+type\s+([A-Z]\w*)\s*=\s*\{([^\n]*)\}\s*;?\s*$/gm)) {
+      if (NOT_A_MODEL_RE.test(m[1])) continue;
+      const fieldCount = (m[2].match(/[\w'"]+\??\s*:/g) || []).length;
+      if (fieldCount >= 2) typeModels.push({ name: m[1], file: f, fieldCount });
+    }
+    for (const m of src.matchAll(/^export\s+(?:interface\s+([A-Z]\w*)\s*(?:extends\s+[^{\n]+)?\{|type\s+([A-Z]\w*)\s*=\s*\{)[ \t]*\n([\s\S]*?)\n\}/gm)) {
+      const name = m[1] || m[2];
+      if (NOT_A_MODEL_RE.test(name)) continue;
+      const fieldCount = (m[3].match(/^\s{1,4}[\w'"]+\??\s*:/gm) || []).length;
+      if (fieldCount >= 2) typeModels.push({ name, file: f, fieldCount });
+    }
+  }
+}
 const modelsDedup = models.filter((m) => { const k = m.source + ':' + m.name; if (seenModel.has(k)) return false; seenModel.add(k); return true; });
 
 // ----------------------------------------------------------------------------
@@ -682,13 +708,16 @@ for (const f of FILES) {
   for (const m of src.matchAll(/\brole[s]?\s*(?:===|!==|==|!=)\s*['"]([\w-]+)['"]/g)) roleValues.set(m[1], (roleValues.get(m[1]) || 0) + 1);
   for (const m of src.matchAll(/\broles?\.includes\(\s*['"]([\w-]+)['"]/g)) roleValues.set(m[1], (roleValues.get(m[1]) || 0) + 1);
   for (const m of src.matchAll(/\bhasRole\(\s*['"]([\w-]+)['"]/g)) roleValues.set(m[1], (roleValues.get(m[1]) || 0) + 1);
+  for (const m of src.matchAll(/\btype\s+\w*Role\w*\s*=\s*((?:\s*\|?\s*['"][\w-]+['"])+)/g)) for (const v of m[1].matchAll(/['"]([\w-]+)['"]/g)) roleValues.set(v[1], (roleValues.get(v[1]) || 0) + 1);
 }
 for (const e of enums) if (/role/i.test(e.name)) for (const v of e.values) roleValues.set(v, (roleValues.get(v) || 0) + 1);
 
 const AUTH_NAME_RE = /(^|\/)(auth|authentication|session|sessions)\.(ts|js|tsx)$|(^|\/)(auth|authentication|session)\/[^/]+\.(ts|js|tsx)$|(^|\/)(auth|session)[.-][\w.-]*\.(ts|js|tsx)$|\[\.\.\.nextauth\]|auth\.config\.|(^|\/)(middleware|proxy)\.(ts|js)$/i;
 const authFiles = FILES.filter((f) => AUTH_NAME_RE.test(f) && !isTestFile(f) && !/\.(swagger|dto)\./.test(f));
 const middlewareFiles = FILES.filter((f) => /(^|\/)(middleware|proxy)\.(ts|js)$/.test(f));
+if (modelsDedup.length === 0) collectTypeModels();
 const roleModels = uniq(modelsDedup.filter((m) => m.flags.role).map((m) => m.name));
+const loginFiles = FILES.filter((f) => /(^|\/)(login|sign-?in)[\w.-]*\.(tsx|jsx|vue|svelte)$/i.test(f) && !isTestFile(f));
 const loginPages = pageRoutes.filter((r) => /\/(login|signin|sign-in|register|signup|sign-up)(\/|$)/i.test(r.route)).map((r) => r.route);
 
 // ----------------------------------------------------------------------------
@@ -816,19 +845,19 @@ for (const f of envExamples) for (const m of read(f).matchAll(/^\s*(?:export\s+)
 // Domain hints
 // ----------------------------------------------------------------------------
 const DOMAIN_KEYWORDS = {
-  'ecommerce': ['product', 'cart', 'order', 'checkout', 'sku', 'coupon', 'inventory', 'shipping', 'variant', 'catalog', 'collection'],
-  'travel-booking': ['tour', 'destination', 'booking', 'itinerary', 'hotel', 'room', 'departure', 'traveler', 'traveller', 'package', 'availability'],
-  'education-lms': ['course', 'lesson', 'student', 'enrollment', 'instructor', 'quiz', 'class', 'certificate', 'teacher', 'cohort', 'assessment', 'attendance'],
+  'ecommerce': ['product', 'cart', 'order', 'checkout', 'sku', 'coupon', 'inventory', 'shipping', 'variant', 'catalog', 'collection', 'sanpham', 'donhang', 'giohang'],
+  'travel-booking': ['tour', 'destination', 'booking', 'itinerary', 'hotel', 'room', 'departure', 'traveler', 'traveller', 'package', 'availability', 'datphong', 'khachsan', 'lichtrinh'],
+  'education-lms': ['course', 'lesson', 'student', 'enrollment', 'instructor', 'quiz', 'class', 'certificate', 'teacher', 'cohort', 'assessment', 'attendance', 'khoahoc', 'hocvien', 'baihoc'],
   'corporate-agency': ['portfolio', 'testimonial', 'service', 'team', 'casestudy', 'project', 'client', 'inquiry', 'quote'],
-  'news-publishing': ['article', 'post', 'category', 'tag', 'author', 'comment', 'newsletter', 'editorial'],
+  'news-publishing': ['article', 'post', 'category', 'tag', 'author', 'comment', 'newsletter', 'editorial', 'tintuc', 'baiviet'],
   'saas': ['tenant', 'organization', 'workspace', 'subscription', 'plan', 'apikey', 'webhook', 'seat', 'membership', 'usage', 'invoice'],
   'marketplace': ['vendor', 'seller', 'commission', 'payout', 'dispute', 'provider', 'merchant'],
-  'healthcare-appointments': ['patient', 'doctor', 'appointment', 'clinic', 'treatment', 'prescription', 'practitioner', 'therapist'],
+  'healthcare-appointments': ['patient', 'doctor', 'appointment', 'clinic', 'treatment', 'prescription', 'practitioner', 'therapist', 'benhnhan', 'bacsi', 'lichkham'],
   'real-estate': ['property', 'listing', 'agent', 'viewing', 'unit', 'broker', 'landlord'],
   'job-board': ['job', 'candidate', 'application', 'resume', 'employer', 'applicant', 'cv', 'interview'],
-  'fnb-ordering': ['menu', 'menuitem', 'reservation', 'table', 'kitchen', 'dish', 'branch'],
+  'fnb-ordering': ['menu', 'menuitem', 'reservation', 'kitchen', 'dish', 'branch', 'restaurant', 'thucdon', 'datban', 'monan', 'nhahang'],
   'events-ticketing': ['event', 'ticket', 'attendee', 'venue', 'checkin', 'speaker', 'session', 'seat'],
-  'community-ugc': ['thread', 'report', 'moderation', 'ban', 'reputation', 'follow', 'reaction', 'group', 'flag'],
+  'community-ugc': ['thread', 'report', 'moderation', 'reputation', 'follow', 'reaction', 'flag', 'mute'],
   'consumer-app': ['onboarding', 'referral', 'device', 'feedback', 'push', 'invite', 'share', 'profile', 'install', 'sync'],
   'fintech-kyc': ['wallet', 'transaction', 'kyc', 'loan', 'ledger', 'account', 'transfer', 'deposit', 'withdrawal'],
 };
@@ -838,6 +867,13 @@ function tokens(name) {
 const bag = new Set();
 for (const m of modelsDedup) tokens(m.name).forEach((t) => bag.add(t));
 for (const r of [...pageRoutes, ...apiRoutes]) tokens(r.route || r.path).forEach((t) => bag.add(t));
+// typed models of a schema-less project count like real models
+for (const m of typeModels) tokens(m.name).forEach((t) => bag.add(t));
+// words written with a hyphen in a route ("thuc-don", "dat-ban") are also matched joined, so a Vietnamese slug can match its keyword
+for (const r of [...pageRoutes, ...apiRoutes]) for (const seg of String(r.route || r.path).split('/')) {
+  const parts = seg.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  for (let i = 0; i + 1 < parts.length; i++) bag.add(parts[i] + parts[i + 1]);
+}
 const domainHints = Object.entries(DOMAIN_KEYWORDS).map(([domain, kws]) => {
   const matched = kws.filter((k) => bag.has(k) || bag.has(k.replace(/s$/, '')));
   return { domain, score: matched.length, keywords: matched };
@@ -867,6 +903,7 @@ const report = {
     serverActions: cap(serverActions, 80),
   },
   models: cap(modelsDedup, 400),
+  typeModels: cap(typeModels, 80),
   enums: cap(enums, 150),
   statusHints: cap(statusHints, 80),
   existingAdmin: {
@@ -880,6 +917,7 @@ const report = {
     files: cap(authFiles, 20),
     middleware: middlewareFiles,
     loginPages: uniq(loginPages),
+    loginFiles: uniq(loginFiles).slice(0, 10),
     modelsWithRoleFields: roleModels,
     roleValuesSeenInCode: [...roleValues.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20).map(([role, count]) => ({ role, count })),
   },
@@ -915,9 +953,15 @@ function toMarkdown(r) {
     const rel = m.relations.map((x) => `${x.to}${x.list ? '[]' : ''}`).join(', ');
     L.push(`- ${m.name} [${m.source}] ${m.fieldCount} fields${rel ? ` -> ${rel}` : ''}${f ? `  {${f}}` : ''}  (${m.file})`);
   }
+  if (!r.models.length && (r.typeModels || []).length) {
+    L.push('', 'No ORM, schema or migration was found. Typed data in the code (candidate models: verify by reading the files):');
+    for (const m of r.typeModels.slice(0, 60)) L.push(`- ${m.name} (${m.fieldCount} fields)  (${m.file})`);
+  }
   if (r.enums.length) { L.push('', '## Enums / status hints'); for (const e of r.enums.slice(0, 40)) L.push(`- ${e.name}: ${e.values.join(' | ')}`); for (const s of r.statusHints.slice(0, 20)) L.push(`- (union) ${s.name}: ${s.values.join(' | ')}  (${s.file})`); }
-  L.push('', `## Public pages (${r.routes.pages.length})`);
-  for (const p of r.routes.pages.slice(0, 60)) L.push(`- ${p.route}  (${p.file})`);
+  const adminRouteSet = new Set(r.existingAdmin.adminRoutes || []);
+  const publicPages = r.routes.pages.filter((p) => !adminRouteSet.has(p.route));
+  L.push('', `## Public pages (${publicPages.length})${adminRouteSet.size ? `  (${r.routes.pages.length - publicPages.length} admin routes are listed under "Existing admin footprint")` : ''}`);
+  for (const p of publicPages.slice(0, 60)) L.push(`- ${p.route}  (${p.file})`);
   L.push('', `## API endpoints (${r.routes.api.length})`);
   for (const a of r.routes.api.slice(0, 80)) L.push(`- ${a.method} ${a.path}  (${a.file})`);
   if (r.routes.serverActions.length) { L.push('', '## Server actions'); for (const s of r.routes.serverActions.slice(0, 20)) L.push(`- ${s.file}: ${s.actions.join(', ')}`); }
@@ -930,6 +974,7 @@ function toMarkdown(r) {
   L.push(`- auth files: ${r.auth.files.join(', ') || '-'}`);
   L.push(`- middleware: ${r.auth.middleware.join(', ') || '-'}`);
   L.push(`- login pages: ${r.auth.loginPages.join(', ') || '-'}`);
+  L.push(`- login UI files: ${(r.auth.loginFiles || []).join(', ') || '-'}`);
   L.push(`- models with role-like fields: ${r.auth.modelsWithRoleFields.join(', ') || '-'}`);
   L.push(`- role values seen in code: ${r.auth.roleValuesSeenInCode.map((x) => `${x.role}(${x.count})`).join(', ') || '-'}`);
   L.push('', `## Forms (${r.publicForms.length}) - decide which are public submission forms (leads inbox candidates) and which are in-app`);

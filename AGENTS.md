@@ -35,4 +35,4 @@ Node >= 18, no installs.
 - Changing a skill `description` changes when it fires: re-run the trigger evals (`evals/README.md`, about 9 USD for the whole suite; `--tag paraphrase` or `--case` for a part) and keep the near-miss negatives passing.
 - Never commit private data (personal e-mail addresses, local paths, secrets, real customer data). `check-repo` enforces part of this.
 - Release hygiene: bump `version` in `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` and `package.json`, and add a `CHANGELOG.md` entry; commit messages follow Conventional Commits.
-- Do not claim capabilities that are not implemented or verified, in docs or in the skills.
+- Do not claim capabilities that are not implemented or verified, in docs or in the skills. A level in `docs/coverage-map.md` ("Proven") must cite the evidence that exists today (a test, an audit output, a measured figure); "the guidance exists" is **Guidance**, and a project that has the gate but does not meet it is not Proven (a completeness review found "request ids, runbook" rated Proven while the proving project had a static health route and an undecided runbook).

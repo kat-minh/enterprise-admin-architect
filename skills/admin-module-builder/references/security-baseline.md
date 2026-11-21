@@ -16,9 +16,9 @@ Read when: foundation step, each module's step F, and before Gate 3. An admin pa
 ## Authentication & sessions
 
 - Separate admin login (`/admin/login`) and identity from customer auth; admin accounts are invited/created by admins, not self-registered.
-- Strong password policy or SSO/OIDC; hash with Argon2id/bcrypt via the framework's standard library; never roll your own crypto.
-- **MFA** (TOTP/WebAuthn) for Super Admin and money/PII roles; recovery codes; step-up for sensitive actions.
-- **Brute-force protection**: rate-limit and progressively delay login, reset and MFA attempts per account + IP; generic error messages; lockout/notification.
+- Password policy with numbers (≥ 12 characters, blocklist, no composition rules) or SSO/OIDC; hash with Argon2id/bcrypt/scrypt via the framework's standard library; never roll your own crypto. Details and the recipes: `identity-and-sessions.md`.
+- **MFA** (TOTP/WebAuthn) is **required** for any role with a sensitive permission (Super Admin, money, PII, publish, export), or enforced by the identity provider; deferring it needs a signed risk acceptance. **Step-up** (recent authentication) is required for sensitive actions even before MFA exists. Gates `SEC-13`, `SEC-14`.
+- **Brute-force protection**: rate-limit and progressively delay login, reset and MFA attempts per account + IP; generic error messages; a lockout that **cannot lock out the only Super Admin** (progressive delay, unlock path, ≥ 2 Super Admins) and a notification (`SEC-16`).
 - Sessions: `HttpOnly`, `Secure`, `SameSite=Lax` (or `Strict`), idle timeout (e.g. 30-60 min) and absolute lifetime; rotate ID on login/privilege change; revoke on logout/password change/deactivation; list and revoke active sessions in My Account.
 - Password reset: single-use, short-lived, hashed tokens; don't reveal whether an account exists.
 - **Credentials an admin hands to someone else** (temporary password on create or reset): generate on the server, return in that one response only, force a change at first sign-in, show it once in a dialog that cannot be dismissed (Esc, backdrop) until "I have saved it" is ticked, and never put it in the audit log, the server log, a later read or an error. Test that it appears exactly once across every response of the run. An admin may not reset, demote or deactivate their own account, and the last active Super Admin can never be removed, also under concurrent requests (lock the rows inside the transaction).
@@ -50,7 +50,7 @@ Read when: foundation step, each module's step F, and before Gate 3. An admin pa
 - Mask PII in lists (phone/email partially); "reveal" is a permission + audited action. Default to least data in API responses.
 - Secrets (API keys, SMTP, payment) write-only in UI, stored encrypted or in a secret manager; never in client bundles, logs or audit diffs.
 - Encrypt sensitive columns/documents where regulation demands (KYC, health, genetic data); time-limited signed URLs for documents.
-- Retention & deletion: soft delete default; anonymisation/purge workflow for privacy requests; backups considered. When end users have personal data (GDPR, Vietnam's Decree 13/2023, CCPA and similar), build the `privacy-requests` module: request queue with deadline, export, erasure with legal holds, consent and terms-version log, retention jobs for sessions, audit and soft-deleted data, and a restore drill noted in the runbook.
+- Retention & deletion: soft delete default; anonymisation/purge workflow for privacy requests; backups considered. When end users have personal data (GDPR, Vietnam's Law 91/2025/QH15 with Decree 356/2025/ND-CP in force since 2026-01-01, CCPA and similar; see the jurisdiction table in `privacy-and-data-rights.md`), build the `privacy-requests` module: request queue with deadline, export, erasure with legal holds, consent and terms-version log, retention jobs for sessions, audit and soft-deleted data, and a restore drill noted in the runbook.
 - Do not log request bodies containing secrets/PII; scrub error reports.
 
 ## Operations & hygiene

@@ -308,6 +308,7 @@ if (at('design')) {
   if (ds) {
     if (!hasHeading(ds, /tokens/i)) warn('design-system.md', 'No "Tokens" section.');
     if (!hasHeading(ds, /component/i)) warn('design-system.md', 'No component catalogue section.');
+    if (!hasHeading(ds, /design direction/i)) warn('design-system.md', 'No "Design direction" section: write the brief, the three reference products and the signature move before the tokens (admin-design-system/references/anti-slop-design.md).');
   }
   // fe-first mode: prototype modules are built against api-contract.md (contract-first)
   const prototypes = [...modules.values()].filter((m) => m.status === 'prototype');
@@ -392,6 +393,28 @@ if (at('final') && modules.size) {
   }
   const qa = readDoc('qa-report.md');
   if (qa && !hasHeading(qa, /summary|verdict/i)) warn('qa-report.md', 'No Summary/Verdict section.');
+}
+
+// ---------------------------------------------------------------- final: the runbook decides recovery (operations-readiness.md, gates DOC-5, OPS-1, OPS-2)
+if (at('final')) {
+  const rb = readDoc('runbook.md');
+  if (rb === null) {
+    warn('runbook.md', 'No runbook.md: gates DOC-5 and OPS-1 need one (template admin-qa-gate/templates/runbook.md).');
+  } else {
+    // sections that decide recovery: hosting and domains, backup and restore, monitoring and known limits
+    const sections = [];
+    for (const m of rb.matchAll(/^##\s+(.+)\n([\s\S]*?)(?=^##\s|(?![\s\S]))/gm)) sections.push({ title: m[1].trim(), body: m[2] });
+    const UNDECIDED = /(CHƯA QUYẾT|chưa quyết|UNDECIDED|\bTBD\b|\bTODO\b|<[A-Za-z][^<>\n|]{1,60}>)/g;
+    for (const sec of sections) {
+      if (!/hosting|domain|backup|restore|monitoring|known limits/i.test(sec.title)) continue;
+      const found = [...new Set([...sec.body.replace(/`[^`\n]*`/g, '').matchAll(UNDECIDED)].map((x) => x[0]))];
+      if (found.length) warn('runbook.md', `Section "${sec.title}" is still undecided at final stage (gate OPS-1): ${found.slice(0, 4).join(', ')}${found.length > 4 ? ', …' : ''}. Decide it, or record it as a named condition with an owner, a date and the product owner's risk acceptance.`);
+      if (/backup|restore/i.test(sec.title)) {
+        if (!/\bRPO\b/.test(sec.body) || !/\bRTO\b/.test(sec.body)) warn('runbook.md', `Section "${sec.title}" states no RPO and RTO in numbers (gate OPS-2).`);
+        if (!/drill|restore test|diễn tập|thử khôi phục/i.test(sec.body)) warn('runbook.md', `Section "${sec.title}" records no restore drill (date, duration, result) (gate OPS-2).`);
+      }
+    }
+  }
 }
 
 // ---------------------------------------------------------------- output

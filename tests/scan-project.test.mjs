@@ -285,3 +285,52 @@ test('a PWA or push dependency suggests the consumer-app domain even when no key
   const shop = scan(makeProject({ 'package.json': JSON.stringify({ dependencies: { react: '19.0.0' } }) }));
   assert.ok(!shop.domainHints.some((d) => d.domain === 'consumer-app'), 'no PWA / push signal: no hint');
 });
+
+test('a schema-less front-end-only Next.js site: typed models, union roles, a Vietnamese restaurant, no fake routes (found by running the suite on a second project)', () => {
+  const dir = makeProject({
+    'package.json': JSON.stringify({ dependencies: { next: '16.0.0', react: '19.0.0' } }),
+    'src/app/(vi)/thuc-don/page.tsx': 'export default function P(){return null}',
+    'src/app/(vi)/dat-ban/page.tsx': 'export default function P(){return null}',
+    'src/app/(vi)/gioi-thieu/page.tsx': 'export default function P(){return null}',
+    // a component folder called "pages" is not a Next.js pages router
+    'src/components/pages/about-page.tsx': 'export function AboutPage(){return null}',
+    'src/app/admin/(panel)/dat-ban/page.tsx': 'export default function P(){return null}',
+    'src/components/admin/login-form.tsx': 'export function LoginForm(){return null}',
+    'src/lib/admin/types.ts': [
+      'export type Role = "owner" | "manager" | "reception";',
+      '// a one-line type is a model of its own and must not swallow the next declaration',
+      'export type MenuGroup = { id: string; title: string };',
+      'export type Reservation = {',
+      '  id: string;',
+      '  guests: number;',
+      '  status: "pending" | "confirmed";',
+      '};',
+      'export interface Guest {',
+      '  id: string;',
+      '  name: string;',
+      '}',
+      'export interface ButtonProps {',
+      '  label: string;',
+      '  size: string;',
+      '}',
+      '',
+    ].join('\n'),
+  });
+  const r = scan(dir);
+  assert.equal(r.models.length, 0, 'no ORM: no real models');
+  const names = r.typeModels.map((m) => m.name);
+  for (const need of ['MenuGroup', 'Reservation', 'Guest']) assert.ok(names.includes(need), `typeModels lacks ${need}: ${names}`);
+  assert.ok(!names.includes('ButtonProps'), 'a Props type is not a model');
+  assert.equal(r.typeModels.find((m) => m.name === 'Reservation').fieldCount, 3);
+  const roles = r.auth.roleValuesSeenInCode.map((x) => x.role);
+  for (const need of ['owner', 'manager', 'reception']) assert.ok(roles.includes(need), `role ${need} not found: ${roles}`);
+  assert.ok(r.auth.loginFiles.some((x) => x.endsWith('login-form.tsx')));
+  assert.equal(r.domainHints[0].domain, 'fnb-ordering', JSON.stringify(r.domainHints));
+  assert.ok(!r.domainHints.some((d) => d.domain === 'community-ugc'), 'the Vietnamese word "ban" (table) must not suggest a community site');
+  assert.ok(!r.routes.pages.some((p) => p.route === '/about-page'), 'components/pages/*.tsx is not a route');
+  assert.ok(r.routes.pages.some((p) => p.route === '/thuc-don'));
+  const md = execFileSync(process.execPath, [SCANNER, dir, '--md'], { encoding: 'utf8' });
+  const publicSection = md.split('## Public pages')[1].split('## API endpoints')[0];
+  assert.ok(!publicSection.includes('/admin/'), 'admin routes are listed under the existing admin footprint, not as public pages');
+  assert.match(md, /No ORM, schema or migration was found/);
+});

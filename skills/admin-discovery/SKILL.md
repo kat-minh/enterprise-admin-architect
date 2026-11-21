@@ -54,6 +54,8 @@ Fill § "Content & configuration inventory" of `templates/product-discovery.md` 
 Group entities into 3-8 business domains and draw relationships (Mermaid `erDiagram`). Identify lifecycles (status enums are strong hints), ownership, and cross-domain side effects. Write `business-domain-map.md`.
 
 ### 5. Match domain patterns
+**Depth, not just breadth.** For every foundation family in scope, put the capability ladder in front of the owner (`references/capability-ladders.md`) and record the chosen level and what the next level would add. Before Gate 1, do an **expert benchmark pass**: for each family name two real products or standards an expert would compare against (for example a CMS or site builder for content and design, OWASP ASVS and NIST for identity, GDPR and the local data-protection law for privacy, the SRE production-readiness review for operations) and list what they have that the inventory does not; each gap becomes a module line, a level choice or a recorded exclusion. Do not wait for the owner to ask for the obvious next thing.
+
 Open `references/domains/_index.md`, match signals to domain files and read **only the matching ones**. If the business is unusual (lab testing, logistics, church donations…), follow `references/domains/_custom-domain-playbook.md` instead of forcing it into e-commerce. Domain files are examples to adapt, not templates to install.
 
 ### 6. Build the module inventory

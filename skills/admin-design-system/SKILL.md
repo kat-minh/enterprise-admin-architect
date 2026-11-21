@@ -8,7 +8,7 @@ description: Phase 4 of building an admin system - establish the enterprise-grad
 Goal: the admin must look and behave like a mature enterprise product (Linear / Stripe / Shopify Admin / GitHub-level clarity) - **consistent, dense but readable, fast to operate** - while staying inside the project's existing stack.
 
 Inputs: `product-discovery.md` (stack, existing UI kit), `module-inventory.md`, `information-architecture.md`.
-Outputs: `docs/admin/design-system.md` (template in `templates/`), implemented tokens + app shell + shared components + **one reference module**.
+Outputs: `docs/admin/design-system.md` (template in `templates/`, starting with a recorded **design direction**), implemented tokens + app shell + shared components + **one reference module**.
 
 ## Procedure
 
@@ -17,10 +17,13 @@ Outputs: `docs/admin/design-system.md` (template in `templates/`), implemented t
 - **Existing good kit → keep it.** Raise professionalism through tokens (density, radius, colour), layout and patterns - not by adding another kit. Record "Reuse decision" in `design-system.md`.
 - No kit → pick one from `references/stack-adapters.md` that fits the stack (Tailwind → shadcn/ui + TanStack Table + react-hook-form + zod; Ant Design projects → Ant Design theme tokens, etc.). Never mix two component kits in one admin.
 - Only deviate from the public site's design system where admin needs differ (higher density, neutral palette) and say why.
-- If `ui-ux-pro-max`, `web-design-guidelines` or `dataviz` skills are installed, consult them for review and charts; they refine, they do not replace this standard.
+- If `ui-ux-pro-max`, `web-design-guidelines`, `frontend-design` or `dataviz` skills are installed, consult them for review and charts; they refine, they do not replace this standard.
+
+### 1b. Decide the design direction (before any token)
+Defaults produce an admin that is correct and **undecided**: the system font, the framework blue, one radius and one soft shadow on everything, a row of four identical stat tiles. Owners read that as generated. Before Step 2, write `design-system.md` section 0 following `references/anti-slop-design.md` §1: a 12-line brief (operators, hours, device, density class, three adjectives that can be opposed), **three reference products** with "borrow / do not copy" plus two anti-references, one signature move, the voice rule, and the decisions the sources disagree on (font, case, side stripes, motion, dark mode). Run the specificity and baseline tests. If the owner has no taste to express, offer two directions on the same dashboard and let them choose; do not default silently.
 
 ### 2. Define design tokens first
-Colour (neutral scale + one accent + semantic status), type scale, spacing (4px grid), radius, borders, surfaces, shadows, control heights, table density, focus ring, z-index, breakpoints, motion. Defaults and rationale: `references/visual-standard.md`. Implement as CSS variables / theme config so every module inherits them. **No module-specific styling without a token.**
+Colour (neutral scale + one accent + semantic status), type scale, spacing (4px grid), radius, borders, surfaces, shadows, control heights, table density, focus ring, z-index, breakpoints, motion. Values come from the direction of Step 1b; `references/visual-standard.md` gives the defaults to **change unless a reason is recorded**. Implement as CSS variables / theme config so every module inherits them. **No module-specific styling without a token.**
 
 ### 3. Build the app shell
 Sidebar (grouped, collapsible, active state, permission-filtered) · top bar (breadcrumbs, global search/command menu, notifications, help, user menu, environment badge) · single main scroll region · page scaffold (`PageHeader` + toolbar + content) · auth guard layout · 401/403/404/500 pages · login page · global toast/confirm layer. Details in `references/stack-adapters.md` and `references/accessibility-responsive.md`.
@@ -37,12 +40,12 @@ Plus: StatusBadge, ConfirmDialog (3 risk levels), PermissionGate, EmptyState, Er
 Pick the most representative P0 domain module. Implement with **real data** (`full-stack`) or, in `fe-first` mode, through the typed mock adapter described in `admin-module-builder/references/fe-first-mock-layer.md` (service interface + zod schemas + server-like mock + "Prototype data" banner): list (server-side pagination/filter/sort, URL state) → preview drawer → detail page → create/edit form → permissions → loading/empty/error states → responsive. This is the pattern every module copies, so get it right now. Verify with the browser (screenshots) when browser tools are available; otherwise give the user run instructions.
 
 ### 6. Document and present Gate 2
-Fill `design-system.md` (tokens table, component catalogue with usage rules, patterns, deviations). Show screenshots of dashboard, list, drawer, detail, form. Validate: `node <skills-dir>/admin-qa-gate/scripts/validate-admin-docs.mjs --root <project> --stage design` (`<skills-dir>` = the folder that contains the `admin-*` skill directories). Wait for approval before mass-producing modules.
+Fill `design-system.md` (direction, tokens table, component catalogue with usage rules, patterns, deviations). Show the **design gate package** of `references/anti-slop-design.md` §6, generated from the running app: the brief, a token sheet rendered from the real CSS, three key screens in light and dark (dashboard, dense list with the drawer open, a detail or form) plus the list at phone width, a density comparison, and the audit evidence, with questions a non-designer can answer. Validate: `node <skills-dir>/admin-qa-gate/scripts/validate-admin-docs.mjs --root <project> --stage design` (`<skills-dir>` = the folder that contains the `admin-*` skill directories). Wait for approval before mass-producing modules.
 
 ## Rules
 - Tokens before pages. Shared component before copy-paste.
 - Prefer information density over whitespace; keep one scroll region per page; avoid modal-on-modal.
 - Colour is never the only status signal (pair with label/icon).
-- No decorative gradients, random charts or giant KPI cards. Every widget answers an operational question.
+- No decorative gradients, random charts or giant KPI cards. Every widget answers an operational question. The tells and how they are checked: `references/anti-slop-design.md` §2 (gates `UX-17`, `UX-18`).
 - Accessibility is part of done: keyboard, focus, labels, contrast (see `references/accessibility-responsive.md`).
 - Locale-aware: currency, dates, timezone, and (for Vietnamese) diacritic-insensitive search and fonts with full Vietnamese support.
