@@ -202,6 +202,8 @@ Phiên bản 1.x. Có test tự động (scanner, validator tài liệu, bundler
 - Phần stack adapters (Ant Design, shadcn/ui, MUI…) mô tả API điển hình; hãy đối chiếu với phiên bản bạn đang dùng.
 - Đối tượng chính là Claude Code; các công cụ khác dùng cùng định dạng mở nhưng không được kiểm thử trong CI.
 
+Việc bộ skill có tự kích hoạt đúng lúc hay không được kiểm tra bằng `claude plugin eval` (29 ca trong [`evals/`](evals/README.md): 54/57 lượt chạy nên kích hoạt đã gọi đúng skill, 30/30 lượt không nên kích hoạt đã im lặng; đây là phép thử nhanh của người duy trì, không phải benchmark).
+
 Báo cáo thực tế khi dùng là đóng góp hữu ích nhất - xem [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Đóng góp, bảo mật, giấy phép

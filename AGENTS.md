@@ -31,6 +31,7 @@ Node >= 18, no installs.
 - `SKILL.md` stays under 500 lines and the description under 1024 characters with no `: ` sequence; move detail into `references/`.
 - Template headings, table headers and enum values are machine-checked by `validate-admin-docs.mjs`; changing them requires updating the validator, the example and the tests together.
 - Any change to `scan-project.mjs`, `validate-admin-docs.mjs` or `bundle.mjs` needs a test in `tests/`.
+- Changing a skill `description` changes when it fires: re-run the trigger evals (`evals/README.md`, about 9 USD for the whole suite; `--tag paraphrase` or `--case` for a part) and keep the near-miss negatives passing.
 - Never commit private data (personal e-mail addresses, local paths, secrets, real customer data). `check-repo` enforces part of this.
 - Release hygiene: bump `version` in `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` and `package.json`, and add a `CHANGELOG.md` entry; commit messages follow Conventional Commits.
 - Do not claim capabilities that are not implemented or verified, in docs or in the skills.

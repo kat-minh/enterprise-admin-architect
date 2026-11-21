@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.6.1 - 2026-11-21
+
+A check of whether the skills wake up for the way people really ask, with `claude plugin eval`.
+
+- **New `evals/`:** 29 trigger cases (13 positive with keywords in English and Vietnamese, 6 positive paraphrased without the word "admin", 10 negative including near misses such as a single chart widget, a landing page, a BI report, Google sign-in, unit tests, an SQL injection review), with a README on how to run them and what they cost (about 0.09 USD a run, 8-9 USD for the suite). They measure triggering in an empty workspace, not the quality of the work that follows.
+- **Two descriptions widened** after the paraphrased cases showed gaps (2 of 6 did not fire at first): `enterprise-admin-architect` now also covers owners or staff who must manage orders, users, texts, banners or content without a developer or by editing the database by hand; `admin-ui-audit` covers a stats page that is only a few cards and a table. Both are under 1,024 characters.
+- **A grader lesson:** a negative case must count only this suite's own skills; the environment ships other skills and a charting skill fired, correctly, on a chart request, which a "no skill at all" grader wrongly counted as a miss.
+- **Result:** positive 54 / 57 runs invoke a right skill (and the most specific one), negative 30 / 30 stay silent. One known miss, left as it is: "How do I let my non-technical team change the texts and banners of my app without calling a developer?" (an advice question with no code to look at). 29 prompts written by the maintainer, one model, one day: a smoke test of the descriptions, not a benchmark.
+
 ## 1.6.0 - 2026-11-21
 
 Lessons from applying the "Guidance" rows of `docs/coverage-map.md` to the proving build (the owner asked to apply every row that could be applied), then measuring and auditing the result. Four rows were applied for real, the rest were left out on purpose and the map now says why.

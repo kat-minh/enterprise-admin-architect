@@ -4,3 +4,6 @@ Thumbs.db
 *.log
 # scanner output generated inside a target project, not this repo
 .scan.json
+
+# plugin eval output
+evals/results/

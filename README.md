@@ -202,6 +202,8 @@ Version 1.x. Covered by automated tests (scanner, documentation validator, bundl
 - Stack adapters (Ant Design, shadcn/ui, MUI…) describe typical APIs; verify against your installed versions.
 - Primary target is Claude Code; other tools use the same open format but are not exercised in CI.
 
+Skill triggering is checked with `claude plugin eval` (29 cases in [`evals/`](evals/README.md): 54 of 57 positive runs invoke a right skill, 30 of 30 negative runs stay silent; a smoke test by the maintainer, not a benchmark).
+
 Field reports are the most useful contribution - see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Contributing, security, license
