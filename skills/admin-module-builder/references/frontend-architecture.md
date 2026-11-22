@@ -23,6 +23,8 @@ Read when: scaffolding the admin app, reviewing its structure, or deciding where
 - **One navigation table** (`nav`) with label, route, icon, required permission: the sidebar, the landing page, the route guards and the "no access" screen all read it. A module appears once, in one file.
 - **Route-level code splitting**; the admin bundle is separate from the public one; heavy libraries (charts, rich-text editor, date pickers) load with the page that needs them.
 - **Design tokens as CSS variables**, one component kit, no ad-hoc colours; overlays (dialog, drawer, menu, tabs, toast) written once with focus management and used everywhere.
+- **The admin imports the host product's tokens; it never copies them.** A copied token file drifts: the proving project's admin first shipped with another brand colour, another typeface and another logo than the product it manages, and nobody noticed until the two were side by side. Import (or generate from) the product's token file and add only the admin's own aliases on top; a test compares the computed accent, text font and radius of an admin page with the public product's.
+- **Layers are a contract, written once** (a z-index table in `design-system.md`): content < sticky headers < save bar < drawer and sheet < dialog < toast < command menu, with every overlay rendered into one portal root. On a phone the save bar and the toast sit above the tab bar; a toast stays visible over an open dialog.
 
 ## One home per kind of state
 

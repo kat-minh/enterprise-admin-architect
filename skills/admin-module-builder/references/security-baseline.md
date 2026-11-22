@@ -44,6 +44,8 @@ Read when: foundation step, each module's step F, and before Gate 3. An admin pa
 - **File uploads**: type/MIME/magic-byte/size checks, random keys, separate origin for user content, no executable uploads, SVG sanitised or blocked.
 - **CSV/XLSX export**: neutralise formula injection.
 - Open redirects: validate `next`/`returnTo` URLs are relative/same-origin.
+- **Admin-editable strings are untrusted at every sink.** A banner, label, site title, alt text or link that an editor saves reaches the public product through a template, `innerHTML` or an attribute built by string concatenation, and one saved string becomes stored XSS for every visitor. A gate that only tried `<` and `>` passed while an attribute context needed nothing but a quote. Escape at the **sink**, not at save time: all five characters (`& < > " '`) for text and for attribute values, or use text nodes and framework bindings instead of string-built HTML. Accept link schemes from an allow-list (`https`, `http`, `mailto`, `tel`, relative) and reject `javascript:` and `data:`. The test saves a payload set (`"><img src=x onerror=…>`, `' onmouseover='…`, `javascript:…`) into **every** editable field and asserts on the rendered public page that nothing runs and the text shows literally (`SEC-21`).
+- **A backslash in a JavaScript string is not a backslash in the SQL.** `'\s+'` inside an ordinary JS string reaches the database as `'s+'` and silently matches the wrong rows. Write regex-bearing SQL in a `.sql` file or with `String.raw`, and review every query that contains a backslash by running it on a fixture row that should match and one that should not.
 
 ## Data protection
 

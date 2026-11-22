@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.8.0 - 2026-11-23
+
+Lessons from finishing and operating the proving project (a consumer web app, its API and its separate admin) after 1.7.0: what the owner found by using it, and what the first production run broke. **Guidance and gates only: no script or template changed**, so the audit template still does not measure the UI items below; the proving project checks them with assertions in its own suites.
+
+- **Stored XSS through admin-editable strings** (`security-baseline.md`, `SEC-21`): a string saved by an editor reached an attribute built by concatenation, and the old gate only tried `<` and `>`. The rule is to escape at the sink (five characters), to accept link schemes from an allow-list, and to test a payload set in every editable field on the rendered public page. Also a review item: a backslash in a JavaScript string is consumed before the SQL sees it (`'\s+'` became `'s+'`).
+- **Sign-in limiter details** (`identity-and-sessions.md` §4, `SEC-22`): key IPv6 by `/64`, a per-account ceiling, an in-flight reservation before the password check, limits on reveal, inspect, reset and invitation lookup, a bounded limiter, aggregated denied-audit rows.
+- **Masking is defeated by credentials and by search** (`privacy-and-data-rights.md`, `SEC-23`): credential-like fields are masked for every role; masked fields are not searchable without the reveal permission.
+- **Analytics behind a connection pooler** (`analytics-endpoints.md`, `ENG-13`): a separate small pool, and the statement timeout set per transaction with `SET LOCAL`, because a start-up parameter is refused by some poolers and every analytics call then answers 500. The production fix was verified (the errors stopped); the cause was inferred, not read from the production error, and the text says so.
+- **A 5xx an operator can act on** (`backend-contract.md`, `OPS-11`): request id in the UI, a safe copyable "Technical details" block for admins, and a System diagnostic that re-runs the failing path.
+- **Migrations on an existing database** (`operations-readiness.md` §3, `OPS-12`): baseline instead of re-running, `lock_timeout` for DDL, a retrying database connection at boot.
+- **Content versions** (`site-content-cms.md` §3, `CMS-8`): a rollback resets the draft; a draft write without a revision is refused. **Announcements** (§6): all languages in one record, scheduled sends with the tolerance stated, a lock against double sends.
+- **Admin UI** (`frontend-architecture.md`, `data-table-spec.md`, `navigation-patterns.md`, `accessibility-responsive.md`, `form-spec.md`, `UX-21…24`): import the host's tokens, a written layer contract; density that moves the row (a `min-height` token alone changed nothing in lists with two-line cells) and a toolbar whose row count does not depend on its content; a centred collapsed rail; no clipped line height (≥ 1.3); setting rows in narrow containers; the product's own date-time picker for scheduled times.
+- **Playbook** (`e2e-test-playbook.md`): test that a setting has a measured effect, rebuild before testing a preview build, give delegates their own ports and stop only their own processes, scope the click that answers a confirmation, and look at screenshots at five widths before writing the assertion.
+- **Evidence and limits:** each item above was met and fixed in the proving project (for example its layout suite of 22 checks, its date-time picker suite of 28 checks and a push suite of 323 checks passed on its stack). Nothing was re-measured on a second stack, and the items are rated **Guidance** and **Gate** in `docs/coverage-map.md`, not Proven.
+
 ## 1.7.0 - 2026-11-21
 
 The owner kept finding missing capabilities one at a time: a "site design" module that edited two accent colours, a security module with no second factor, a privacy module that was a single line. This release is a **completeness review** of the suite against real products and standards (five independent reviewers, claims spot-checked), and every change below was **applied to the proving project first** and verified on a stack the builder did not use. The register, with honest statuses, is `docs/completeness-review.md`.

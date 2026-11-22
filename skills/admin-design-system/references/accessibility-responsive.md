@@ -50,6 +50,7 @@ Only data tables may scroll horizontally (inside their container). Check long Vi
 - Formatting via `Intl`: currency `new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })` (VND has no decimals); dates `dd/MM/yyyy`, times 24h; relative times with absolute tooltip.
 - **Timezone**: store UTC; display in a configured business timezone (e.g. `Asia/Ho_Chi_Minh`); scheduled actions show the timezone explicitly.
 - **Fonts** must render Vietnamese diacritics (Inter, Be Vietnam Pro, Roboto OK); check stacked marks and line-height (≥ 1.4) so accents are not clipped.
+- **A fixed-height control with `line-height: 1` clips its text.** The tail of "g" and "y" and stacked Vietnamese marks (the dot under "ọ", the accent and hook of "ổ") fall outside a one-line box, so a select that shows "Hành động" or "Mọi" loses its lower half. Give single-line text in controls, navigation labels and table cells a line height of at least 1.3 times the font size and centre it with flex instead of a tight line box. Test with a computed-style assertion plus a screenshot of the longest and most accented label of each language (`UX-23`).
 - **Search** must be diacritic-insensitive ("nguyen" finds "Nguyễn"): Postgres `unaccent` extension, MySQL accent-insensitive collation, or a normalised search column; also case-insensitive and whitespace-trimmed.
 - **Names**: don't split into first/last blindly (Vietnamese family name first); use "Full name" unless the domain needs more.
 - **Phone**: normalise to E.164 (`+84…`) while accepting local input (`0xxx`).

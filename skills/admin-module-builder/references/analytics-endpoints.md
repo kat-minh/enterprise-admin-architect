@@ -36,6 +36,14 @@ Read when: building the data behind a dashboard, a report or an analytics tab (t
 - Exclude archived or soft-deleted rows the same way in every query; say so in the catalogue's "Limitation" column.
 - Put the period bounds in a CTE used by every statement of the request, so one request sees one clock.
 
+## A pool of its own, and a timeout that survives the pooler
+
+- Run analytics on a **small separate pool** (two to four connections) with a **statement timeout** (about 15-30 s). A slow aggregate then waits for its own connection and cannot take the connections that sign-in and the rest of the admin need.
+- **Set the timeout inside a transaction, not as a connection option.** Passing it as a driver connection option (`-c statement_timeout=…`) sends a start-up parameter, and several connection poolers (PgBouncer in transaction mode and the hosted poolers built on it) refuse start-up parameters they do not know. Then **every analytics request fails with a 500 while the rest of the admin works**. Use `BEGIN; SET LOCAL statement_timeout = …; <queries>; COMMIT` on a checked-out connection: `SET LOCAL` ends with the transaction and works in every pooling mode. The same goes for any other per-request setting (`search_path`, time zone).
+- **Test through the connection string production uses** (the pooled one), not the local direct database: the failure exists only behind the pooler (`ENG-13`).
+- Give the System page a **diagnostic** that runs a trivial query through the analytics pool and reports the time, the pool's limits and the first error, so the next 500 is read from a page and not guessed (`OPS-11`).
+- In the proving project the production analytics endpoints answered 500 on every range while the other dashboard data loaded, and they stopped failing once the timeout moved into the transaction. The cause was **inferred** from how poolers behave and never read from the production error: treat it as the first suspect and read the real error.
+
 ## Caching
 
 Aggregates over millions of rows are measured in seconds; the page must not wait for them twice.

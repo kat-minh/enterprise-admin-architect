@@ -42,6 +42,10 @@ Read when: building or reviewing any list page.
 
 **Never** load thousands of records into the browser to filter client-side. Lists > ~200 potential rows use **server-side** pagination, filtering and sorting.
 
+**Density must change the row, and the test measures it.** A density token that sets only `min-height` changes nothing in every list whose cells are taller than the minimum (a two-line name with an e-mail under it, an avatar, a badge row), which is most of them: the operator picks "Compact" and nothing moves. Drive the cell's **vertical padding** from the density token as well, and assert the measured height of the first body row on at least two real lists at each setting, strictly ordered, by at least 6 px per step (`UX-22`).
+
+**The toolbar's row count does not depend on its content.** When an optional part appears (a saved-filter button, a bulk-action bar, a filter chip) the other parts must not jump to another row. Name the rows (search and tools on the first, filters on the second, or one row with an overflow menu) and compare the toolbar's height with and without a saved view at 1280, 1440 and 1920 px (`UX-22`).
+
 ## Column visibility and saved views
 
 Proven in a build. Both are per-admin conveniences kept on the device; neither changes what a role may see.

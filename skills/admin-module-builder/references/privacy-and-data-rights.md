@@ -68,6 +68,8 @@ A checklist in the runbook (`operations-readiness.md` §6): detect and record th
 
 Masked by default; a **reveal** needs a permission and a reason, is audited with what was seen, and hides again. Add: a per-admin cap and an alert when a person reveals more than N records in an hour; an optional ticket or case id field; step-up re-authentication (`identity-and-sessions.md`); a read-only role gets no reveal. Exports of personal data are a separate permission, async, audited and expiring.
 
+Two ways masking is defeated. (1) A field that works as a **credential** (a legacy login name, an API identifier, a handle used to sign in) is masked for every role, even the ones that see e-mail addresses, and is never shown in a list. (2) **Search**: a free-text search over a masked field tells the searcher whether a guess is right, one prefix at a time. Leave masked fields out of free-text search (and say so in the placeholder), or accept only an exact match from a role that holds the reveal permission and audit it as a reveal. Test both as a role without the permission: search for a known full value and assert that no row comes back (`SEC-23`).
+
 ## 10. Processors, impact assessments and backups
 
 Keep a table of **processors** (hosting, e-mail, maps, analytics, error tracking): what data, where, contract in place. Ask the **impact-assessment question** at discovery: does the product handle precise location, children's data, biometrics, health or financial data, or profile at scale? If yes, record that an assessment is needed and who owns it. Backups hold personal data: encrypt, limit who restores, keep within the retention window, and after a restore **replay the deletion log** so erased people do not come back.

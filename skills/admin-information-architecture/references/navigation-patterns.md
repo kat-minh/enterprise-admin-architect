@@ -89,6 +89,7 @@ A bell in the header on every page that shows what needs doing now. It must call
 ## Sidebar behaviour
 
 - Expanded 240-264px; collapsible to icon rail (56-64px) with tooltips; remembers state.
+- In the **collapsed rail every icon is centred**, with and without its tooltip. A tooltip wrapper that shrinks to its content moves the icon a few pixels off the centre, which is easy to see on screen and impossible to see in a review. Make the wrapper fill the item and assert each icon's offset from the rail's centre (≤ 0.5 px, `UX-23`).
 - Active item highlighted along with its group; groups collapsible; keyboard accessible (arrow keys, Enter).
 - Mobile/tablet: off-canvas drawer navigation.
 - Footer: environment badge (prod vs staging), user menu, help.

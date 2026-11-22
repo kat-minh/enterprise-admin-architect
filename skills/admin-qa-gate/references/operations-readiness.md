@@ -36,6 +36,9 @@ A project is **Ready**, **Ready with named conditions** or **Not ready**. It is 
 - A **ledger table** records each applied migration with a checksum; a changed or missing file is an error. Never re-run every file at every boot.
 - One migrator at a time (advisory lock). Run migrations as a **separate command** in the deploy, not as a side effect of starting the web process.
 - If a migration fails the process must **not serve** (readiness fails, the old instances keep serving); swallowing the error and continuing is a defect.
+- **A database that has the tables but no ledger needs a baseline.** After comparing the real schema with what the files would build, record the existing files as applied (with their checksums) instead of running them against live data: "create if not exists" files stop being safe to run twice once an `ALTER` or a data fix is in the history. Offer the baseline as an explicit command, never as a silent boot step.
+- **Set `lock_timeout` for DDL** (about 3-5 s) and retry a few times. A migration that waits for a lock on a busy table makes every later query queue behind it, and that looks like an outage. Prefer expand/contract steps that need no long lock.
+- **Retry the database at boot** with a backoff for a minute or two before giving up. A hosted database that sleeps or restarts is slow to answer, and a process that exits on the first refused connection turns a short delay into a crash loop. Readiness stays red while it retries (`OPS-12`).
 - Test: two instances starting at once; a failed migration leaves readiness red. The runbook rollback section must agree with this rule (a runbook that forbids rollback and a gate that demands reversibility contradict each other: pick expand/contract and say so).
 
 ## 4. Health and the System panel

@@ -50,6 +50,7 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] CMS-5 Concurrent edits give `409`; edit, publish and read permissions are separate and enforced by the API.
 - [ ] CMS-6 The public read endpoint serves only published content, with `ETag`/`304` and a short cache; strings built at module load are covered; orphaned overrides are listed, never dropped.
 - [ ] CMS-7 The time between "published" and "visible" is stated in the UI and was measured.
+- [ ] CMS-8 A rollback resets the draft to the rolled-back version, and a draft write without a `revision` is refused (`428` or `400`), not unchecked; both were tested (`site-content-cms.md` §3).
 - [ ] DS-1 (design control in scope) The level of design control (L1/L2/L3 of `capability-ladders.md`) is recorded; the token catalogue is closed and kept on the server; every token is editable, derived or locked, and each lock has a stated reason.
 - [ ] DS-2 Contrast is computed on the server per theme for every colour **and every derived colour** (hover, soft background, status colour on its tint, the text on the accent): normal text ≥ 4.5:1, only large text 3:1, components 3:1. No threshold was lowered to fit a default.
 - [ ] DS-3 Font, type scale, radius, shadow, density and motion are enumerations. Fonts are a curated, self-hosted, lazily loaded list (≤ 4 weights); there is no arbitrary font URL, no custom CSS and no client-computed CSS.
@@ -86,6 +87,10 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] UX-18 The design-consistency metrics of `ui-audit.mjs` (M1-M12, `anti-slop-design.md` §4) have no unexplained `must`; every `should` is fixed or recorded with a reason; the eight-question rubric was scored on the screenshots **before** the metrics were read, by a reviewer other than the builder, with an evidence line per score; the report says a clean metrics run proves consistency, not good design.
 - [ ] UX-19 **One home per concept.** A table of every noun the owner can edit (brand, logo, colour, banner, notification settings...) shows the one screen that edits it. No noun has two screens, no tab label repeats in two modules of the same sidebar group (a "Brand" tab in the content module and another in the design module was a defect), and a section may differ in permission, never in location. Old addresses of a merged or moved screen redirect, tab parameters included. A workflow that spans several editors (publish, approve, schedule, history, rollback) has its own screen, with what is waiting for release shown as a count on its sidebar item and as a chip on every screen that writes to the draft; a group is named by what it is, not by listing its items; the cluster reads as the operator's jobs (write, style, ship).
 - [ ] UX-20 **No stray native scrollbar.** Tab rows, toolbars and navigation strips show no native scrollbar at any width (hidden bar with an edge fade, the active tab scrolled into view, underlines inside their box); the only visible scrollbars are the main scroller, data tables marked as scroll regions, dialogs and code. The UI audit ran in a browser **with scrollbars visible** (`ui-audit.mjs` rules SCROLL-1 and SCROLL-2): a headless browser hides them by default, so an audit that never changes that flag cannot see this class of defect.
+- [ ] UX-21 **Setting rows and controls hold in the narrowest container** (`form-spec.md`): the label above the control, equal option widths, no option cut off (`scrollWidth` ≤ `clientWidth`) at 320 px and in the narrowest panel or sheet that hosts them.
+- [ ] UX-22 **A preference has a measured effect, and the toolbar keeps its shape.** Density changes the first row's height by at least 6 px per step on two real lists; theme and language effects are asserted; the toolbar has the same number of rows with and without a saved view or other optional part at 1280, 1440 and 1920 px.
+- [ ] UX-23 **Single-line text is not clipped and the rail is centred.** Select values, navigation labels and table cells have a line height of at least 1.3 times the font size; the longest accented label of each language is on a screenshot; every icon of the collapsed rail is within 0.5 px of the rail's centre.
+- [ ] UX-24 **A time that matters is picked with the product's own picker** (bounds that disable and clamp, keyboard, Esc returns focus, a phone bottom sheet, the time zone shown), not the browser's native date-time input.
 
 ## C. Functionality
 
@@ -129,6 +134,9 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] SEC-18 Accounts are created by invitation (single-use expiring link); the creating admin never learns a password. Offboarding disables, revokes sessions and reassigns; dormant admins are reported; an access review is produced on a schedule.
 - [ ] SEC-19 The security headers of `identity-and-sessions.md` §8 are present on the **deployed or production-preview admin host and on the API**, verified by `admin-qa-gate/templates/security-headers.mjs` (headers plus a page walk with no CSP violation); the runbook says where each is set.
 - [ ] SEC-20 The application's runtime database role cannot alter or delete audit rows (tested by connecting as that role); the audit table's tamper-evidence level is stated.
+- [ ] SEC-21 Every admin-editable string that reaches the public product was saved with the payload set of `security-baseline.md` (quotes, tags, `javascript:`) and rendered: nothing runs, the text shows literally, and link fields accept only allow-listed schemes. Escaping is at the sink.
+- [ ] SEC-22 The sign-in limiter keys IPv6 by `/64`, has a per-account ceiling, reserves the attempt before the check, covers reveal, inspect, reset and invitation lookup, expires its own state, and writes aggregated denied rows (`identity-and-sessions.md` §4). A parallel burst of wrong passwords was tested.
+- [ ] SEC-23 Credential-like fields are masked for every role, and masked fields cannot be searched without the reveal permission (`privacy-and-data-rights.md`); tested as a role without it.
 
 ## E. Engineering
 
@@ -144,6 +152,7 @@ Read when: running QA for a module or the final gate. IDs (PC-1, UX-3…) are fo
 - [ ] ENG-10 Admin bundle isolated from public bundle (route group/dynamic imports).
 - [ ] ENG-11 Every front-end type that mirrors an API response was compared with the real response (a probe script prints each endpoint's shape as a real role); no `any` or loose compatibility shim is left without a reason.
 - [ ] ENG-12 An error boundary per route and per independent widget; a render error shows a recoverable screen with the request id, never a blank page; unhandled rejections and render errors are reported; no `console.error` on any happy path.
+- [ ] ENG-13 Analytics queries run on their own small pool with a statement timeout set per transaction (`SET LOCAL`), and every endpoint was exercised through the **pooled production connection string** (`analytics-endpoints.md`).
 
 ## F. Performance
 
@@ -188,6 +197,8 @@ Read `references/operations-readiness.md`. The verdict is Ready, Ready with name
 - [ ] OPS-8 Every event or log table has a retention rule and a purge job under its own role, with one audit row per purge.
 - [ ] OPS-9 Limiter hits are visible; an operator can block an address or account for a stated time (reason, expiry, audit); limits are not hard-coded constants; per-process state is stated, and with several instances a shared store is used.
 - [ ] OPS-10 The environment is validated at boot (fail fast); the runbook's variable table matches what the code reads; behaviour on **two instances** was tested, or the QA report says "not verified on two instances" and the runbook says "run one instance".
+- [ ] OPS-11 **A 5xx is actionable:** the request id is in the envelope, the logs and the UI; an admin with the diagnostics permission sees a safe "Technical details" block they can copy; the System page has a diagnostic that re-runs the failing path and reports the first error (`backend-contract.md`).
+- [ ] OPS-12 A database that has tables but no ledger is baselined by an explicit command; DDL runs under `lock_timeout`; the process retries the database at boot with a backoff while readiness stays red (`operations-readiness.md` §3).
 
 ## J. Privacy and data rights
 Read `admin-module-builder/references/privacy-and-data-rights.md`. Engineering checks, not legal advice.

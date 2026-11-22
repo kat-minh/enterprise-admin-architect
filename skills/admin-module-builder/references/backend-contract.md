@@ -43,6 +43,8 @@ Success: `{ data }` (or `{ data, meta }`). Errors use one shape everywhere:
 ```
 Status codes: `400` malformed/unknown params · `401` unauthenticated · `403` forbidden · `404` not found (also for out-of-scope records when existence must not leak) · `409` conflict/stale version/state transition not allowed · `422` validation failed · `429` rate limited · `500` unexpected (log with request ID; never leak stack traces).
 
+**A 5xx must be actionable.** The envelope's `requestId` is shown in the UI next to the error. An authenticated admin who holds a diagnostics permission also gets a short, safe `diagnostic` (the stage that failed, the error class and a message with no SQL, host names or secrets), shown in the UI behind a "Technical details" control with a copy button, so a report is one pasted line and not "it shows 500". Nothing of this reaches a non-admin response. Log the full error server-side with the same request id (`OPS-11`).
+
 ## Mutations
 
 - Validate every input with a schema (zod/class-validator/pydantic); strip unknown fields (**mass-assignment protection**: explicit allow-lists for updatable fields; never `update(req.body)`).

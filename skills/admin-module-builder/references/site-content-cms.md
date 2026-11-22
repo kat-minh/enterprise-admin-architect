@@ -48,6 +48,7 @@ For configuration documents (not articles):
 
 - **One draft + immutable versions.** Publishing copies the draft into a new version in a single transaction with its audit row. **Rollback creates a new version** that copies an old one; history is never rewritten. Version 0 means "the defaults in code".
 - **Concurrency:** drafts carry a `revision`; a stale write is `409` and shows what the other editor changed. Discarding a draft needs a reason.
+- **Rollback also resets the draft, and `revision` is required.** After a rollback to version 5 the draft equals version 5; otherwise the next publish quietly brings back the edits that were meant to be undone. A draft write **without** a `revision` is refused (`428` or `400`), never treated as "do not check", so a client that forgets it cannot bypass the `409`. Test both: two writes from a stale revision, and a rollback followed by a publish with no edit in between (`CMS-8`).
 - **Preview in the real product,** not an approximation: a signed, short-lived token with its own audience, passed as `?preview=`, moved out of the URL at once (`history.replaceState`, so it does not leak through referrers), `no-store`, a visible "previewing a draft" ribbon, never written to the product's cache.
 - **Before publishing:** a per-item diff (added, changed, removed), a confirmation dialog with counts and a mandatory reason. Schedules (banners, campaigns) are effective-dated and evaluated on the server at request time.
 - **Permissions:** `read`, `edit` and `publish` are separate. Edit touches nobody; publish is sensitive and audited. A maker-checker step is optional.
@@ -72,6 +73,8 @@ For configuration documents (not articles):
 ## 6. Pattern: banners and announcements
 
 Fields: message per language, tone (info, warning, success), optional link, audience (all, signed-in, guests), schedule in the business time zone, dismissible, enabled, order, and a cap on how many show at once. Accessibility and behaviour: `role="status"`; dismissal is stored per banner id **and content version** so an edited banner reappears; no layout shift; never cover fixed navigation.
+
+**Announcements that reach devices** (push, e-mail, in-app messages). One announcement record holds **every language** (title and body per locale, one default as the fallback) and each recipient gets their own language; a composer with a language switch that sends one language per send makes the operator choose which users to leave out. Offer **scheduling** (`send_at`, cancel while pending, the business time zone shown) and a recipient-count dry run. When the host sleeps, a scheduler inside the web process fires late but never early: state the tolerance next to the picker ("sent within about 10 minutes of the time") and take a lock (a database advisory lock) so two instances do not send twice. The time is picked with the design system's own picker (`form-spec.md`), not the browser's.
 
 ## 7. Pattern: pages, menus, SEO (websites)
 

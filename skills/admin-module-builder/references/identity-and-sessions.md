@@ -32,6 +32,15 @@ Even before MFA exists, a sensitive action (role edit, admin create or reset, pu
 
 A counter that locks an account after N bad tries lets anyone who knows an e-mail lock the only Super Admin out. Prefer **progressive delay** per account **and** address; alert on repeated failures; give an **unlock path** (another Super Admin, or an out-of-band recovery documented in the runbook); never answer 429 to the **correct** password because of someone else's bad tries unless you also provide that path. Keep at least **two Super Admins**. The per-IP limiter must not take a whole office behind one NAT offline.
 
+How the limiter is built decides whether it works:
+
+- **Key IPv6 clients by their `/64` prefix.** One home connection owns 2^64 addresses, so a per-address counter is bypassed by changing the last bits. Count IPv4 by address and IPv6 by `/64`.
+- **Add a per-account ceiling across all addresses.** Without it a distributed guesser tries one password per address for ever. It slows (progressive delay); it does not lock, for the reason above.
+- **Reserve the attempt before checking the password** (an in-flight reservation, released on success). Counting after the check lets 50 parallel requests all see "4 failures so far" and each test a password.
+- **Rate-limit the endpoints that confirm a guess indirectly:** reveal and inspect, "does this e-mail exist", password reset, invitation lookup and the step-up dialog.
+- **Bound the limiter itself:** expire its keys, cap what it may hold in memory or rows, and cap the **denied** rows it writes to the audit log (one aggregated row per actor, action and window, with a count). A flood of refusals must not fill the audit table or bury the real events.
+- A limiter slows guessing; it does not make a weak password strong. Sensitive roles still need the second factor or step-up of §2 and §3 (`SEC-22`).
+
 ## 5. Sessions
 
 Idle timeout 30 minutes (15 for roles with sensitive permissions), absolute timeout 8-12 hours, revocation checked on every request (a disabled or role-changed admin loses access on the next request). Each admin has a **My sessions** list (device, address, created, last active, current) with revoke one and **sign out everywhere**; a Super Admin can force sign-out of anyone (audited). Store address and user agent at creation (they are the evidence). Purge expired sessions (`operations-readiness.md` §8).
