@@ -1,6 +1,6 @@
 {
   "name": "enterprise-admin-architect",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "End-to-end skill suite for building professional, enterprise-grade admin systems (back office / CMS) for an existing website: discovery, information architecture & RBAC, design system, module builder, QA gate.",
   "author": {
     "name": "kat-minh"
