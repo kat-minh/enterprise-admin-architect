@@ -44,14 +44,15 @@ One module, used by every hook:
 - base URL from the environment; the response envelope parsed in one place; a typed error with `status`, `message`, `details`, `retryAfter`;
 - an `AbortSignal` on every read, so navigating away cancels it;
 - personal data is never cached by the browser (`cache: 'no-store'`); an empty body where data was promised is an error, not `undefined`;
-- retries only for idempotent reads, with a limit; writes never retry on their own;
+- retries only for idempotent reads, with a limit (on `503 db_busy`, after `Retry-After`, at most twice, with a neutral "busy, retrying" hint only after a second and a half); writes never retry on their own, and a 503 never signs the user out;
+- a request id per call in `X-Request-Id` (a retry of the same call adds `.1`, `.2`), kept in the bug report's step for that call, also when no answer came, so the operator can open the server's side of that very call (`admin-qa-gate/references/operations-readiness.md` §5);
 - status handling is central: `401` → sign out and return to the page after sign-in; `403` → the forbidden state; `404` → not found; `409` → reload the record and say someone else changed it; `422/400` → field errors; `429` → honour `Retry-After`; `5xx` → a retryable error state.
 - **Types are claims.** Written from the spec, they drift from the real server. Keep a probe script that calls each endpoint as a real role and prints the response shape; compare it with the types whenever a backend module lands, and keep a thin compatibility layer at the boundary while an API is changing.
 
 ## Hooks and components
 
 - One hook per resource operation (`useTrips(query)`, `useSaveText()`); components never call the client directly.
-- **A query for data guarded by a permission runs only when the role holds it** (`enabled: can(permission)`). A hook that fires anyway for a role without the permission shows up as a `403` in every audit run and in the audit log.
+- **A query for data guarded by a permission runs only when the role holds it** (`enabled: can(permission)`). A hook that fires anyway for a role without the permission shows up as a `403` in every audit run and in the audit log. The same holds for the **scope**: the shell's probe of two whole-log features (the server's request log, the app's bug reports), sent for a role that reads only its own rows, got a 403 on every page load, printed a console error, and, once the server kept a request log, stored a warning each time that ate the per-minute budget of the very log the probe asked about. Decide from the scope the shell already knows; let the probe's 403 be the final word only when the scope is unknown.
 - Presentational components take data and callbacks; page components wire hooks to them. A component that needs more than about eight props is two components.
 - Every data widget has its own loading, empty and error state; the page composes widgets, so one failure does not blank the page.
 - Accessibility lives in the primitives (names, roles, focus, keyboard); pages use them instead of re-implementing.

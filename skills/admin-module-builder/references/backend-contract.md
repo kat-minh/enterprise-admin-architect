@@ -45,6 +45,8 @@ Status codes: `400` malformed/unknown params · `401` unauthenticated · `403` f
 
 **A 5xx must be actionable.** The envelope's `requestId` is shown in the UI next to the error. An authenticated admin who holds a diagnostics permission also gets a short, safe `diagnostic` (the stage that failed, the error class and a message with no SQL, host names or secrets), shown in the UI behind a "Technical details" control with a copy button, so a report is one pasted line and not "it shows 500". Nothing of this reaches a non-admin response. Log the full error server-side with the same request id (`OPS-11`).
 
+**Busy, limited and over quota are answers the client can act on** (`OPS-18`). A full pool, a statement timer or a restarting database answers `503` with `code: "db_busy"` and `Retry-After`; a write ceiling answers `429` with `Retry-After`; a creation over a quota answers `409` with `code: "quota_exceeded"`, the `resource` and the `limit`, so the client writes the sentence in the user's language. A bug is still a `500`. Every response carries `X-Request-Id`, the caller's own when it is well formed (`admin-qa-gate/references/operations-readiness.md` §5). When the contract adds a field the client sends (a request id inside a bug report), an older server refuses it with `400`: the client falls back without the field instead of losing the request.
+
 ## Mutations
 
 - Validate every input with a schema (zod/class-validator/pydantic); strip unknown fields (**mass-assignment protection**: explicit allow-lists for updatable fields; never `update(req.body)`).
@@ -123,3 +125,4 @@ Mark affected modules `blocked`/`partial` in the inventory; build UI only for wh
 - [ ] Bulk/export limits, async for large, injection-safe
 - [ ] DB constraints in place; migrations reversible
 - [ ] No sensitive data in logs/errors/responses
+- [ ] Busy (`503 db_busy`), write ceiling (`429`) and quotas (`409 quota_exceeded`) answer with a machine code and `Retry-After` where it applies; a bug stays `500`

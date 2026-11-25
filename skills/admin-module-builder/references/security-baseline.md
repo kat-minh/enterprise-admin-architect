@@ -61,6 +61,8 @@ Read when: foundation step, each module's step F, and before Gate 3. An admin pa
 - Security headers: `Strict-Transport-Security`, `X-Content-Type-Options`, `Referrer-Policy`, `frame-ancestors 'none'` (clickjacking), CSP.
 - Environment badge (prod/staging) in the UI; staging never points at production data/credentials.
 - Dependency hygiene: lockfile, audit (`npm audit`), pin critical packages; no secrets in repo (`.env` ignored; `.env.example` names only).
+- **Bootstrap credentials are secrets too.** A file with the hash of a first or temporary admin password does not belong in git, even hashed: make it locally with a script, read it once at boot (a missing file is a no-op), ignore it, and list its name among the files the secret scan refuses. Run a secret scan in CI that prints only the file, line and kind, never the value, with an explicit allow marker for a deliberate fake credential in a test (`ENG-14`).
+- A public diagnostic route makes no outbound call; probing an upstream service is an admin action, rate-limited and audited (`admin-qa-gate/references/operations-readiness.md` §4).
 - Rate-limit expensive/sensitive endpoints (exports, bulk, search, password).
 - Monitoring/alerts on auth anomalies and mass actions; error monitoring with PII scrubbing.
 
@@ -73,7 +75,7 @@ Read when: foundation step, each module's step F, and before Gate 3. An admin pa
 | Data export | Permission, scope, masking, audit, signed expiring link |
 | Role/permission editing | `rbac.manage` only, MFA step-up, audit, invariants |
 | Integration keys/webhooks | Masked, rotate/revoke, test endpoint safely (SSRF controls) |
-| Viewing private user content (trips, messages, documents) | Separate `inspect` permission, mandatory reason, audit entry on every view, minimum fields, no bulk access; "public by link" content is still personal data |
+| Viewing private user content (trips, messages, documents) | Separate `inspect` permission, mandatory reason, audit entry on every view, minimum fields, no bulk access; "public by link" content is still personal data. A **new kind** of private content (a checklist added to a record) joins the same inspect instead of a new read path: counts only in the detail, the items only behind the reason, read in the same transaction as the one audit row, capped with a `truncated` flag, the people in it masked like the owner; test that its text appears nowhere else (list, detail, timeline, audit metadata, the error answer when the audit insert is forced to fail) |
 | Raw SQL/console tools | Do not build; if unavoidable, read-only replica + approval |
 
 ## Security acceptance checklist

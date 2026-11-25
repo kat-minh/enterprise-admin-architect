@@ -28,7 +28,7 @@ A value belongs in the admin only if **all** hold: (1) it must change within min
 ## 2. Design
 
 - A **typed registry in code**: key, type, default, bounds, description, sensitivity, who may change it. Unknown keys are rejected; nothing is free-form.
-- **Effective value = runtime override, else deploy-time default, else code default.** Show which one is in force and offer "reset to default".
+- **Effective value = runtime override, else deploy-time default, else code default.** Show which one is in force and offer "reset to default". When an explicit deploy-time variable must win instead (an older variable that already decided the behaviour keeps its meaning, as in the proving project), the screen shows it as a **lock** with its source and the API refuses a change with `409`, instead of storing a value that does nothing.
 - Every change needs a **reason**, shows its **consequences** (counts of affected users where possible), is **audited with before and after**, and is atomic with the audit row. Security-relevant switches are top-role only. Use optimistic concurrency.
 - Switches that are meant to be temporary carry an `expires_at` or a visible "on since" age, so they are not forgotten.
 - A **read-only configuration view** answers "what is this server running with" without exposing secrets.
@@ -36,7 +36,7 @@ A value belongs in the admin only if **all** hold: (1) it must change within min
 ## 3. Delivery and failure behaviour
 
 - Read through a **per-process cache of a few seconds** and invalidate it on the instance that handled the change; say that other instances see the change within the cache lifetime. Never query the settings table on the hot path uncached.
-- **Decide the failure mode per switch and write it down.** A kill switch that cannot be read should fail **open** (keep serving); a security toggle should keep the **last known** value. Bound the lookup time so a slow settings store cannot slow the product.
+- **Decide the failure mode per switch and write it down.** A kill switch that cannot be read should fail **open** (keep serving); a security switch fails to its **strict** side. A switch that **loosens** security (it re-opens a legacy sign-in path, relaxes a limit) defaults to off, and a lookup that fails answers "off" even right after it read "on", retried after about a second instead of after the cache lifetime (`SEC-25`). While it is off, the refused path answers exactly like a wrong credential (same status, same message), so the switch does not tell anyone which accounts exist; before it is turned on, the screen shows how many accounts depend on it. Bound the lookup time so a slow settings store cannot slow the product.
 - Code that enforces a limit must read it through a function, not a constant captured at start-up (a limiter built with a fixed `max` ignores the setting).
 - While a switch is on, say so wherever it matters: dashboard attention queue, the affected page, and the user-facing message of the blocked action.
 
@@ -50,4 +50,4 @@ A flip takes effect on the next request (within the cache window); a failing set
 
 ## Pitfalls
 
-Toggles no code reads; a runtime setting that can disable the admin itself; secrets shown in the UI; no record of who flipped what; "temporary" switches left on for months; limits that exist only in the UI.
+Toggles no code reads; a runtime setting that can disable the admin itself; secrets shown in the UI; no record of who flipped what; "temporary" switches left on for months; limits that exist only in the UI; a security default moved from the code into a switch, forgetting that a **code rollback** brings the old default back (in the proving project, reverting the change would turn the legacy sign-in path on again): the runbook's rollback section says what a revert does to each security switch.

@@ -16,7 +16,7 @@ Read when: building or reviewing admin sign-in, accounts, sessions, roles that c
 
 ## 1. Password policy
 
-Minimum **12 characters** (**15** when the password is the only factor; 8 is acceptable only as one factor of MFA, NIST SP 800-63B-4); allow at least 64 and allow paste and password managers; check against a blocklist of common and previously breached passwords (a list of at least 3,000 entries, or a k-anonymity breach-check API); **no composition rules and no scheduled rotation**; show a strength hint, never a rule list that pushes people to `Password1!`. Hash with scrypt, argon2id or bcrypt. A password change ends the other sessions and notifies the owner of the account.
+Minimum **12 characters** (**15** when the password is the only factor; 8 is acceptable only as one factor of MFA, NIST SP 800-63B-4); allow at least 64 and allow paste and password managers; check against a blocklist of common and previously breached passwords (a list of at least 3,000 entries, or a k-anonymity breach-check API); **no composition rules and no scheduled rotation**; show a strength hint, never a rule list that pushes people to `Password1!`. Hash with scrypt, argon2id or bcrypt. A password change ends the other sessions (raise a token version in the same statement that stores the password) and notifies the owner of the account; the response carries a fresh token for the device that made the change, so that one stays signed in. Test that a token issued before the change now answers 401. The same applies to the public product's own accounts, not only to the admins'.
 
 ## 2. Multi-factor authentication
 
